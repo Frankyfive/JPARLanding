@@ -22,6 +22,7 @@
         font-size: 11px; font-weight: 800;
         padding: 3px 8px; border-radius: 20px;
         text-transform: uppercase; letter-spacing: 0.5px;
+        white-space: nowrap;
       }
       .cms-header h2 { font-size: 16px; font-weight: 800; }
       .form-group { margin-bottom: 14px; }
@@ -47,7 +48,6 @@
         width: 100%; max-height: 130px; object-fit: cover;
         border-radius: 6px; border: 1.5px solid #cbd5e0;
       }
-      .events-only { display: none; }
       .mode-toggle { display: flex; gap: 8px; margin-bottom: 8px; }
       .mode-btn {
         flex: 1; padding: 6px; border-radius: 6px;
@@ -66,6 +66,7 @@
       .status-pills input#status-deployed:checked + label { background: #00C6AB; border-color: #00C6AB; color: #fff; }
       .status-pills input#status-testing:checked  + label { background: #f6ad55; border-color: #f6ad55; color: #fff; }
       .status-pills input#status-archive:checked  + label { background: #a0aec0; border-color: #a0aec0; color: #fff; }
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
       .btn-row { display: flex; gap: 8px; margin-top: 20px; }
       .btn {
         flex: 1; padding: 10px; border: none; border-radius: 6px;
@@ -92,10 +93,14 @@
 
     <div id="msg" class="msg"></div>
 
-    <!-- Shared fields -->
     <div class="form-group">
       <label for="title">Title <span class="required">*</span></label>
       <input type="text" id="title" placeholder="Enter title...">
+    </div>
+
+    <div class="form-group">
+      <label for="eventType">Event Type</label>
+      <input type="text" id="eventType" placeholder="e.g. NETWORKING, TRAINING, CE">
     </div>
 
     <div class="form-group">
@@ -103,35 +108,27 @@
       <textarea id="description" placeholder="Enter description..."></textarea>
     </div>
 
-    <!-- Events-only fields -->
-    <div class="form-group events-only">
-      <label for="eventType">Event Type</label>
-      <input type="text" id="eventType" placeholder="e.g. NETWORKING, TRAINING, CE">
+    <div class="two-col">
+      <div class="form-group">
+        <label for="eventDate">Date</label>
+        <input type="date" id="eventDate">
+      </div>
+      <div class="form-group">
+        <label for="eventTime">Time</label>
+        <input type="time" id="eventTime">
+      </div>
     </div>
 
-    <div class="form-group events-only">
-      <label for="eventDate">Date</label>
-      <input type="date" id="eventDate">
+    <div class="form-group">
+      <label for="eventInfo">Info / Details</label>
+      <textarea id="eventInfo" placeholder="Location, Zoom link, CE credit info, prerequisites..."></textarea>
     </div>
 
-    <div class="form-group events-only">
-      <label for="eventInfo">Info / Additional Details</label>
-      <textarea id="eventInfo" placeholder="Zoom link, CE credit info, prerequisites..."></textarea>
-    </div>
-
-    <div class="form-group events-only">
-      <label for="eventUrl">Registration URL</label>
+    <div class="form-group">
+      <label for="eventUrl">Registration / Link URL</label>
       <input type="url" id="eventUrl" placeholder="https://www.eventbrite.com/...">
     </div>
 
-    <!-- Non-events fields -->
-    <div class="form-group non-events-only">
-      <label for="tags">Tags</label>
-      <input type="text" id="tags" placeholder="e.g. featured, news, tx">
-      <p class="hint">Separate tags with commas.</p>
-    </div>
-
-    <!-- Graphic / Image - shared -->
     <div class="form-group">
       <label>Graphic</label>
       <div class="mode-toggle">
@@ -172,16 +169,6 @@
     <script>
       var SHEET_NAME = '<?= sheetName ?>';
 
-      // Show/hide tab-specific fields
-      if (SHEET_NAME === 'Events') {
-        document.querySelectorAll('.events-only').forEach(function(el) {
-          el.style.display = 'block';
-        });
-        document.querySelectorAll('.non-events-only').forEach(function(el) {
-          el.style.display = 'none';
-        });
-      }
-
       function toggleMode(mode) {
         document.getElementById('mode-url').style.display    = mode === 'url'    ? 'block' : 'none';
         document.getElementById('mode-upload').style.display = mode === 'upload' ? 'block' : 'none';
@@ -205,10 +192,9 @@
         if (!file) return;
         var reader = new FileReader();
         reader.onload = function(e) {
-          var dataUrl  = e.target.result;
-          var base64   = dataUrl.split(',')[1];
-          // Show local preview immediately
-          document.getElementById('imagePreview').src             = dataUrl;
+          var dataUrl = e.target.result;
+          var base64  = dataUrl.split(',')[1];
+          document.getElementById('imagePreview').src              = dataUrl;
           document.getElementById('imagePreviewWrap').style.display = 'block';
           setLoading(true);
           google.script.run
@@ -236,24 +222,17 @@
         if (!title)       return showMsg('Title is required.', 'error');
         if (!description) return showMsg('Description is required.', 'error');
 
-        var status  = document.querySelector('input[name="status"]:checked').value;
-        var graphic = document.getElementById('imageUrl').value.trim();
-
         var rowData = {
           title:       title,
+          eventType:   document.getElementById('eventType').value.trim(),
           description: description,
-          graphic:     graphic,
-          status:      status
+          date:        document.getElementById('eventDate').value,
+          time:        document.getElementById('eventTime').value,
+          info:        document.getElementById('eventInfo').value.trim(),
+          url:         document.getElementById('eventUrl').value.trim(),
+          graphic:     document.getElementById('imageUrl').value.trim(),
+          status:      document.querySelector('input[name="status"]:checked').value
         };
-
-        if (SHEET_NAME === 'Events') {
-          rowData.eventType = document.getElementById('eventType').value.trim();
-          rowData.date      = document.getElementById('eventDate').value;
-          rowData.info      = document.getElementById('eventInfo').value.trim();
-          rowData.url       = document.getElementById('eventUrl').value.trim();
-        } else {
-          rowData.tags = document.getElementById('tags').value.trim();
-        }
 
         setLoading(true);
         google.script.run
@@ -270,8 +249,8 @@
       }
 
       function resetForm() {
-        ['title','description','eventType','eventDate','eventInfo',
-         'eventUrl','tags','imageUrl'].forEach(function(id) {
+        ['title', 'eventType', 'description', 'eventDate', 'eventTime',
+         'eventInfo', 'eventUrl', 'imageUrl'].forEach(function(id) {
           var el = document.getElementById(id);
           if (el) el.value = '';
         });

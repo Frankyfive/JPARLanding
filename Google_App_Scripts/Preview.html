@@ -1,179 +1,299 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <base target="_top">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;800&display=swap&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,800;1,400&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
       body {
         font-family: 'Nunito Sans', sans-serif;
-        background: #fff; color: #00326D;
-        padding: 0;
+        background: #fff;
+        color: #00326D;
+        font-size: 16px;
       }
 
-      /* Header */
-      .preview-header {
-        background: #00326D; color: #fff;
-        padding: 24px 32px;
-        display: flex; align-items: center;
-        justify-content: space-between; flex-wrap: wrap; gap: 12px;
+      /* ── Header ─────────────────────────────── */
+      .header {
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 70px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
       }
-      .preview-header h1 { font-size: 28px; font-weight: 800; color: #fff; }
-
-      /* Tab nav */
-      .tab-nav { display: flex; gap: 8px; flex-wrap: wrap; }
-      .tab-nav a {
-        padding: 6px 16px; border-radius: 20px;
-        font-size: 12px; font-weight: 700; text-decoration: none;
-        background: rgba(255,255,255,0.15); color: #fff;
-        border: 1.5px solid rgba(255,255,255,0.3);
-        transition: all 0.15s;
+      .header__logo img {
+        height: 48px;
+        width: auto;
+        display: block;
       }
-      .tab-nav a:hover, .tab-nav a.active {
-        background: #00C6AB; border-color: #00C6AB;
+      .header__nav {
+        display: flex;
+        gap: 4px;
       }
-
-      /* Filters */
-      .filters-bar {
-        display: flex; gap: 10px; padding: 16px 32px;
-        background: #f7f9fc; border-bottom: 1px solid #e2e8f0;
-        flex-wrap: wrap; align-items: center;
-      }
-      .filters-bar select {
-        padding: 8px 12px; height: 40px;
-        border: 1px solid #cbd5e0; border-radius: 4px;
-        font-family: 'Nunito Sans', sans-serif;
-        font-size: 14px; color: #00326D;
-        background: #fff; cursor: pointer;
-      }
-      .filters-bar select:focus { outline-color: #00C6AB; }
-      .btn-apply {
-        padding: 8px 20px; height: 40px;
-        background: #8fcbfe; color: #fff;
-        border: none; border-radius: 4px;
-        font-family: 'Nunito Sans', sans-serif;
-        font-weight: 700; font-size: 14px; cursor: pointer;
+      .header__nav a {
+        padding: 8px 18px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        color: #00326D;
+        transition: background 0.15s, color 0.15s;
         white-space: nowrap;
+      }
+      .header__nav a:hover,
+      .header__nav a.active {
+        background: #00326D;
+        color: #fff;
+      }
+
+      /* ── Hero ────────────────────────────────── */
+      .hero {
+        background: linear-gradient(135deg, #00326D 0%, #015297 100%);
+        padding: 60px 32px;
+        text-align: center;
+      }
+      .hero h1 {
+        color: #fff;
+        font-size: 42px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        letter-spacing: 0;
+      }
+      .hero p {
+        color: rgba(255,255,255,0.85);
+        font-size: 17px;
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.65;
+      }
+
+      /* ── Filters ─────────────────────────────── */
+      #filters {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+        padding: 16px 32px;
+        background: #f7f9fc;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .filters-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        width: 100%;
+        flex-wrap: wrap;
+      }
+      #filters select {
+        padding: 8px 12px;
+        height: 40px;
+        border: 1px solid #cbd5e0;
+        border-radius: 4px;
+        font-family: 'Nunito Sans', sans-serif;
+        font-size: 14px;
+        color: #00326D;
+        background: #fff;
+        cursor: pointer;
+        appearance: auto;
+      }
+      #filters select:focus { outline-color: #00C6AB; }
+      #typeFilter     { flex-grow: 10; }
+      #locationFilter { flex-grow: 1; min-width: 160px; }
+      .btn-apply {
+        white-space: nowrap;
+        padding: 8px 20px;
+        height: 40px;
+        background: #8fcbfe;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-family: 'Nunito Sans', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
       }
       .btn-apply:hover { background: #015297; }
       .clear-link {
-        font-size: 13px; color: #0c256b;
-        text-decoration: none; cursor: pointer;
-        margin-left: auto;
+        font-size: 13px;
+        color: #0c256b;
+        text-decoration: none;
+        cursor: pointer;
+        text-align: right;
+        width: 100%;
+        padding: 4px 0 0;
       }
       .clear-link:hover { text-decoration: underline; }
 
-      /* Grid */
+      /* ── Grid ────────────────────────────────── */
       .event-calendar-mod { padding: 32px; }
       .event-calendar-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
         gap: 24px;
       }
+      @media screen and (max-width: 992px) {
+        .event-calendar-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+      @media screen and (max-width: 575px) {
+        .event-calendar-grid { grid-template-columns: 1fr; }
+        .hero h1 { font-size: 28px; }
+        #filters, .event-calendar-mod { padding: 16px; }
+        .header { padding: 0 16px; }
+      }
 
-      /* Card */
+      /* ── Card ────────────────────────────────── */
       .event-calendar-event-card {
-        border: 1px solid #e2e8f0;
-        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+      }
+      .event-calendar-event-card-inner {
+        border: 1px solid #B4B4B4;
+        border-radius: 2px;
         overflow: hidden;
         background: #fff;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
         transition: box-shadow 0.2s;
       }
-      .event-calendar-event-card:hover { box-shadow: 0 4px 20px rgba(0,50,109,0.12); }
+      .event-calendar-event-card-inner:hover {
+        box-shadow: 0 4px 20px rgba(0,50,109,0.12);
+      }
 
       /* Card image */
       .event-calendar-event-image img {
-        width: 100%; height: auto;
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
         display: block;
       }
       .event-calendar-event-image-placeholder {
-        width: 100%; height: 180px;
+        width: 100%;
+        height: 200px;
         background: #edf2f7;
-        display: flex; align-items: center; justify-content: center;
-        color: #a0aec0; font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #a0aec0;
+        font-size: 13px;
       }
 
       /* Type badge */
       .event-calendar-event-type-container {
-        padding: 10px 14px 0;
+        padding: 10px 20px 0;
       }
       .event-calendar-event-type {
         display: inline-block;
         background-color: rgba(1, 82, 151, 1.0);
-        padding: 3px 10px; border-radius: 2px;
+        padding: 3px 10px;
+        border-radius: 2px;
       }
       .event-calendar-event-type span {
-        font-weight: bold; font-style: normal;
-        color: rgba(255,255,255,1.0); font-size: 11px;
-        text-decoration: none; letter-spacing: 0.5px;
+        font-weight: bold;
+        font-style: normal;
+        color: rgba(255,255,255,1.0);
+        font-size: 11px;
+        text-decoration: none;
+        letter-spacing: 0.5px;
       }
 
-      /* Text content */
-      .event-calendar-card-text-content { padding: 10px 14px 14px; }
-
+      /* Card text block */
+      .event-calendar-card-text-content {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
       .event-calendar-event-title {
-        margin-bottom: 8px;
         font-family: Inter, sans-serif;
-        font-weight: 700; color: #000; font-size: 22px;
+        font-weight: 700;
+        color: #000;
+        font-size: 22px;
         line-height: 1.2;
+        margin-bottom: 8px;
       }
-
       .event-calendar-event-description {
         font-family: Inter, sans-serif;
-        font-weight: normal; color: #747373; font-size: 16px;
-        line-height: 1.5; margin-bottom: 12px;
+        font-weight: normal;
+        color: #747373;
+        font-size: 16px;
+        line-height: 1.5;
+        margin-bottom: 12px;
+      }
+      .event-calendar-event-details {
+        margin-bottom: 50px;
       }
 
-      /* Details row */
-      .event-calendar-event-details { margin-bottom: 14px; }
-
+      /* Detail rows */
       .event-calendar-event-date,
       .event-calendar-event-time,
       .event-calendar-event-location,
       .event-calendar-event-info {
-        display: flex; align-items: flex-start;
-        gap: 8px; margin-bottom: 8px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 8px;
       }
-
       .event-calendar-date-icon,
       .event-calendar-time-icon,
       .event-calendar-location-icon,
       .event-calendar-info-icon {
+        width: 16px;
+        height: 16px;
+        display: flex;
+        justify-content: center;
         flex-shrink: 0;
-        width: 16px; margin-top: 2px;
+        margin-top: 2px;
       }
       .event-calendar-date-icon svg,
       .event-calendar-time-icon svg,
       .event-calendar-location-icon svg,
       .event-calendar-info-icon svg {
-        width: 14px; height: 14px; fill: #00326D;
+        fill: rgba(1,82,151,1.0);
+        height: 16px;
+        width: auto;
       }
-
+      .event-calendar-date-text,
+      .event-calendar-time-text,
+      .event-calendar-location-text,
+      .event-calendar-info-text {
+        display: flex;
+        align-items: center;
+        color: #000;
+        font-size: 14px;
+        font-family: Inter, sans-serif;
+      }
       .event-calendar-date-text span,
       .event-calendar-time-text span,
       .event-calendar-location-text span,
       .event-calendar-info-text span {
         font-family: Inter, sans-serif;
-        font-weight: normal; color: #000; font-size: 14px;
+        font-weight: normal;
+        color: #000;
+        font-size: 14px;
       }
 
-      .event-calendar-location-text a {
-        font-family: Inter, sans-serif;
-        font-size: 14px; color: #00C6AB;
-        text-decoration: none;
+      /* CTA button */
+      .event-calendar-event-cta {
+        margin-top: auto;
       }
-      .event-calendar-location-text a:hover { text-decoration: underline; }
-
-      /* CTA Button */
-      .event-calendar-event-cta { padding: 0 14px 14px; }
       .event-calendar-standard-button a {
         display: inline-block;
         background-color: rgba(1, 82, 151, 1.0);
         color: rgba(255,255,255,1.0);
         font-family: 'Nunito Sans', sans-serif;
-        font-weight: normal; text-decoration: none;
+        font-weight: normal;
+        text-decoration: none;
         font-size: 14px;
-        padding: 10px 28px; border-radius: 50px;
+        padding: 10px 28px;
+        border-radius: 4px;
         transition: background-color 0.2s, color 0.2s;
       }
       .event-calendar-standard-button a:hover {
@@ -183,67 +303,110 @@
 
       /* Empty / loading */
       .empty-state {
-        text-align: center; padding: 60px;
-        color: #a0aec0; font-size: 14px;
+        text-align: center;
+        padding: 60px;
+        color: #a0aec0;
+        font-size: 14px;
         grid-column: 1 / -1;
       }
       #loading {
-        text-align: center; padding: 60px;
-        color: #a0aec0; font-size: 14px;
+        text-align: center;
+        padding: 60px;
+        color: #a0aec0;
+        font-size: 14px;
       }
     </style>
   </head>
   <body>
 
-    <div class="preview-header">
-      <h1>CMS Preview</h1>
-      <nav class="tab-nav" id="tabNav"></nav>
+    <!-- Header -->
+    <header class="header">
+      <div class="header__logo">
+        <a href="?tab=JPAR+Events">
+          <img src="https://ownyourgrowth.jpar.com/hs-fs/hubfs/JPAR-Star-REAL-ESTATE-blue-web.png?width=100&height=62&name=JPAR-Star-REAL-ESTATE-blue-web.png"
+               alt="JPAR Real Estate" width="100" height="62" loading="eager">
+        </a>
+      </div>
+      <nav class="header__nav" id="tabNav"></nav>
+    </header>
+
+    <!-- Hero -->
+    <div class="hero" id="hero">
+      <h1 id="heroTitle"></h1>
+      <p  id="heroDesc"></p>
     </div>
 
-    <div class="filters-bar" id="filtersBar" style="display:none;">
-      <select id="typeFilter"><option value="">Filter by Type</option></select>
-      <select id="locationFilter"><option value="">Filter by Location</option></select>
-      <button class="btn-apply" onclick="applyFilters()">Apply Filters</button>
-      <a class="clear-link" onclick="clearFilters(); return false;" href="#">Clear Filters</a>
+    <!-- Filters -->
+    <div id="filters">
+      <div class="filters-row">
+        <select id="typeFilter"><option value="">Filter by Type</option></select>
+        <select id="locationFilter"><option value="">Filter by Location</option></select>
+        <button class="btn-apply" onclick="applyFilters()">Apply Filters</button>
+      </div>
+      <a class="clear-link" href="#" onclick="clearFilters(); return false;">Clear Filters</a>
     </div>
 
+    <!-- Loading indicator -->
     <div id="loading">Loading content...</div>
 
+    <!-- Event grid -->
     <div class="event-calendar-mod" id="gridWrap" style="display:none;">
       <div class="event-calendar-grid" id="grid"></div>
     </div>
 
     <script>
-      var CURRENT_TAB   = '<?= tab ?>';
-      var ALL_TABS      = ['Home','Events','Blog','Team','Gallery'];
-      var allRows       = [];
+      var CURRENT_TAB = '<?= tab ?>';
 
-      // SVG icons (inline, matches HubSpot exactly)
+      var ALL_TABS = ['JPAR Events', 'JPAR TX Events', 'Digital Library'];
+
+      var HERO_CONTENT = {
+        'JPAR Events': {
+          title: 'JPAR Events',
+          desc:  'Stay ahead with JPAR\'s national events, training, and education sessions—designed to help you grow, connect, and lead in real estate.'
+        },
+        'JPAR TX Events': {
+          title: 'JPAR Texas Events',
+          desc:  'Continuous growth is essential for JPAR agents, and our Texas in-person events and weekly educational sessions provide invaluable opportunities for expansion.'
+        },
+        'Digital Library': {
+          title: 'Digital Library',
+          desc:  'Access JPAR\'s library of resources, guides, and digital content to support your real estate career.'
+        }
+      };
+
       var ICON_CALENDAR = '<svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" aria-hidden="true"><path d="M0 464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V192H0v272zm320-196c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM192 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM64 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zM400 64h-48V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H160V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H48C21.5 64 0 85.5 0 112v48h448v-48c0-26.5-21.5-48-48-48z"/></svg>';
       var ICON_CLOCK    = '<svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm61.8-104.4l-84.9-61.7c-3.1-2.3-4.9-5.9-4.9-9.7V116c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v141.7l66.8 48.6c5.4 3.9 6.5 11.4 2.6 16.8L334.6 349c-3.9 5.3-11.4 6.5-16.8 2.6z"/></svg>';
       var ICON_LOCATION = '<svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><path d="M505.04 442.66l-99.71-99.69c-4.5-4.5-10.6-7-17-7h-16.3c27.6-35.3 44-79.69 44-127.99C416.03 93.09 322.92 0 208.02 0S0 93.09 0 207.98s93.11 207.98 208.02 207.98c48.3 0 92.71-16.4 128.01-44v16.3c0 6.4 2.5 12.5 7 17l99.71 99.69c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.59.1-33.99zm-297.02-90.7c-79.54 0-144-64.34-144-143.98 0-79.53 64.35-143.98 144-143.98 79.54 0 144 64.34 144 143.98 0 79.53-64.35 143.98-144 143.98zm.02-239.96c-40.78 0-73.84 33.05-73.84 73.83 0 32.96 48.26 93.05 66.75 114.86a9.24 9.24 0 0 0 14.18 0c18.49-21.81 66.75-81.89 66.75-114.86 0-40.78-33.06-73.83-73.84-73.83zm0 96c-13.26 0-24-10.75-24-24 0-13.26 10.75-24 24-24s24 10.74 24 24c0 13.25-10.75 24-24 24z"/></svg>';
       var ICON_INFO     = '<svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 512" aria-hidden="true"><path d="M20 424.229h20V279.771H20c-11.046 0-20-8.954-20-20V212c0-11.046 8.954-20 20-20h112c11.046 0 20 8.954 20 20v212.229h20c11.046 0 20 8.954 20 20V492c0 11.046-8.954 20-20 20H20c-11.046 0-20-8.954-20-20v-47.771c0-11.046 8.954-20 20-20zM96 0C56.235 0 24 32.235 24 72s32.235 72 72 72 72-32.235 72-72S135.764 0 96 0z"/></svg>';
 
-      // Build tab nav
-      var nav = document.getElementById('tabNav');
-      ALL_TABS.forEach(function(t) {
-        var a = document.createElement('a');
-        a.href = '?tab=' + t;
-        a.textContent = t;
-        if (t === CURRENT_TAB) a.className = 'active';
-        nav.appendChild(a);
-      });
+      var allRows = [];
 
-      // Load data
+      // ── Build header nav ──────────────────────────────
+      (function buildNav() {
+        var nav = document.getElementById('tabNav');
+        ALL_TABS.forEach(function(t) {
+          var a = document.createElement('a');
+          a.href = '?tab=' + encodeURIComponent(t);
+          a.textContent = t;
+          if (t === CURRENT_TAB) a.className = 'active';
+          nav.appendChild(a);
+        });
+      })();
+
+      // ── Set hero content ──────────────────────────────
+      (function setHero() {
+        var info = HERO_CONTENT[CURRENT_TAB] || { title: CURRENT_TAB, desc: '' };
+        document.getElementById('heroTitle').textContent = info.title;
+        document.getElementById('heroDesc').textContent  = info.desc;
+      })();
+
+      // ── Load rows from sheet ──────────────────────────
       google.script.run
         .withSuccessHandler(function(rows) {
           allRows = rows || [];
-          document.getElementById('loading').style.display   = 'none';
-          document.getElementById('gridWrap').style.display  = 'block';
-          if (CURRENT_TAB === 'Events') {
-            document.getElementById('filtersBar').style.display = 'flex';
-            populateFilters(allRows);
-          }
+          document.getElementById('loading').style.display  = 'none';
+          document.getElementById('gridWrap').style.display = 'block';
+          populateFilters(allRows);
           renderCards(allRows);
         })
         .withFailureHandler(function(err) {
@@ -251,6 +414,7 @@
         })
         .getAllRows(CURRENT_TAB);
 
+      // ── Render cards ──────────────────────────────────
       function renderCards(rows) {
         var grid = document.getElementById('grid');
         grid.innerHTML = '';
@@ -261,102 +425,137 @@
         }
 
         rows.forEach(function(row) {
-          var graphic   = row['Graphic']      || row['Image URL'] || '';
+          var graphic   = row['Graphic']      || '';
           var title     = row['Title']        || 'Untitled';
-          var desc      = row['Description']  || row['Content']   || '';
+          var desc      = row['Description']  || '';
           var eventType = (row['Event Type']  || '').toUpperCase();
           var date      = row['Date']         || '';
           var time      = row['Time']         || '';
-          var location  = row['Location']     || '';
           var info      = row['Info']         || '';
           var url       = row['URL']          || '';
 
+          // Format date if it's a Date object
+          if (date && typeof date.toLocaleDateString === 'function') {
+            date = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+          }
+
           var imgHtml = graphic
-            ? '<div class="event-calendar-event-image"><img src="' + graphic + '" alt="' + title + '" loading="lazy" style="max-width:100%; height:auto;"></div>'
+            ? '<div class="event-calendar-event-image"><img src="' + escHtml(graphic) + '" alt="' + escHtml(title) + '" loading="lazy"></div>'
             : '<div class="event-calendar-event-image-placeholder">No image</div>';
 
           var typeBadge = eventType
-            ? '<div class="event-calendar-event-type-container"><div class="event-calendar-event-type"><span>' + eventType + '</span></div></div>'
+            ? '<div class="event-calendar-event-type-container"><div class="event-calendar-event-type"><span>' + escHtml(eventType) + '</span></div></div>'
             : '';
 
           var dateRow = date
-            ? '<div class="event-calendar-event-date"><div class="event-calendar-date-icon">' + ICON_CALENDAR + '</div><div class="event-calendar-date-text"><span>' + date + '</span></div></div>'
+            ? '<div class="event-calendar-event-date"><div class="event-calendar-date-icon">' + ICON_CALENDAR + '</div><div class="event-calendar-date-text"><span>' + escHtml(String(date)) + '</span></div></div>'
             : '';
 
           var timeRow = time
-            ? '<div class="event-calendar-event-time"><div class="event-calendar-time-icon">' + ICON_CLOCK + '</div><div class="event-calendar-time-text"><span>' + time + '</span></div></div>'
+            ? '<div class="event-calendar-event-time"><div class="event-calendar-time-icon">' + ICON_CLOCK + '</div><div class="event-calendar-time-text"><span>' + escHtml(String(time)) + '</span></div></div>'
             : '';
 
-          // Location is a URL
-          var locationRow = '';
-          if (location) {
-            var locDisplay = location.replace(/^https?:\/\//, '');
-            locationRow = '<div class="event-calendar-event-location"><div class="event-calendar-location-icon">' + ICON_LOCATION + '</div><div class="event-calendar-location-text"><span><a href="' + location + '" target="_blank">' + locDisplay + '</a></span></div></div>';
-          }
-
+          // Extract city from info for filter purposes (info stored in data attribute)
           var infoRow = info
-            ? '<div class="event-calendar-event-info"><div class="event-calendar-info-icon">' + ICON_INFO + '</div><div class="event-calendar-info-text"><span>' + info + '</span></div></div>'
+            ? '<div class="event-calendar-event-info"><div class="event-calendar-info-icon">' + ICON_INFO + '</div><div class="event-calendar-info-text"><span>' + escHtml(info) + '</span></div></div>'
             : '';
 
           var ctaHtml = url
-            ? '<div class="event-calendar-event-cta"><div class="event-calendar-standard-button"><a href="' + url + '" target="_blank">REGISTER</a></div></div>'
+            ? '<div class="event-calendar-event-cta"><div class="event-calendar-standard-button"><a href="' + escHtml(url) + '" target="_blank">REGISTER</a></div></div>'
             : '';
 
           var card = document.createElement('div');
-          card.className          = 'event-calendar-event-card';
-          card.dataset.eventType  = eventType;
-          card.dataset.location   = location;
-          card.innerHTML =
-            imgHtml +
-            typeBadge +
-            '<div class="event-calendar-card-text-content">' +
-              '<div class="event-calendar-event-title">' + title + '</div>' +
-              '<div class="event-calendar-event-description">' + desc + '</div>' +
-              '<div class="event-calendar-event-details">' +
-                dateRow + timeRow + locationRow + infoRow +
-              '</div>' +
-            '</div>' +
-            ctaHtml;
+          card.className = 'event-calendar-event-card';
+          card.dataset.eventType = eventType;
+          card.dataset.info      = info;
 
-          document.getElementById('grid').appendChild(card);
+          card.innerHTML =
+            '<div class="event-calendar-event-card-inner">' +
+              imgHtml +
+              typeBadge +
+              '<div class="event-calendar-card-text-content">' +
+                '<div class="event-calendar-event-title">' + escHtml(title) + '</div>' +
+                '<div class="event-calendar-event-description">' + escHtml(desc) + '</div>' +
+                '<div class="event-calendar-event-details">' +
+                  dateRow + timeRow + infoRow +
+                '</div>' +
+                ctaHtml +
+              '</div>' +
+            '</div>';
+
+          grid.appendChild(card);
         });
       }
 
+      // ── Filters ───────────────────────────────────────
       function populateFilters(rows) {
-        var typeSet     = new Set();
-        var locationSet = new Set();
+        var typeSet = new Set();
+        var citySet = new Set();
+
         rows.forEach(function(row) {
           var t = (row['Event Type'] || '').toUpperCase().trim();
-          var l = (row['Location']   || '').trim();
           if (t) typeSet.add(t);
-          if (l) locationSet.add(l);
+
+          var city = extractCity(row['Info'] || '');
+          if (city) citySet.add(city);
         });
+
         populateSelect(document.getElementById('typeFilter'),     typeSet,     'Filter by Type');
-        populateSelect(document.getElementById('locationFilter'), locationSet, 'Filter by Location');
+        populateSelect(document.getElementById('locationFilter'), citySet,     'Filter by Location');
       }
 
       function populateSelect(el, values, placeholder) {
         el.innerHTML = '<option value="">' + placeholder + '</option>';
         Array.from(values).sort().forEach(function(v) {
-          el.add(new Option(v, v));
+          var display = el.id === 'typeFilter' ? toTitleCase(v) : v;
+          el.add(new Option(display, v));
         });
       }
 
       function applyFilters() {
         var type = document.getElementById('typeFilter').value;
-        var loc  = document.getElementById('locationFilter').value;
-        var filtered = allRows.filter(function(row) {
-          var matchType = !type || (row['Event Type'] || '').toUpperCase() === type;
-          var matchLoc  = !loc  || (row['Location']  || '') === loc;
-          return matchType && matchLoc;
+        var city = document.getElementById('locationFilter').value;
+
+        document.querySelectorAll('.event-calendar-event-card').forEach(function(card) {
+          var cardType = card.dataset.eventType || '';
+          var cardCity = extractCity(card.dataset.info || '');
+
+          var matchType = !type || cardType === type;
+          var matchCity = !city || cardCity === city;
+
+          card.style.display = (matchType && matchCity) ? '' : 'none';
         });
-        renderCards(filtered);
       }
 
       function clearFilters() {
         document.getElementById('typeFilter').value     = '';
         document.getElementById('locationFilter').value = '';
-        renderCards(allRows);
+        document.querySelectorAll('.event-calendar-event-card').forEach(function(c) {
+          c.style.display = '';
+        });
+      }
+
+      // ── Helpers ───────────────────────────────────────
+      function extractCity(fullLocation) {
+        if (!fullLocation) return null;
+        var match = fullLocation.match(/([A-Za-z\s]+),\s*[A-Z]{2}\s*\d{5}/);
+        if (match) return match[1].trim();
+        if (fullLocation.toLowerCase() === 'zoom') return 'Zoom';
+        return null;
+      }
+
+      function toTitleCase(str) {
+        return str.replace(/\w\S*/g, function(w) {
+          return w.charAt(0).toUpperCase() + w.substr(1).toLowerCase();
+        });
+      }
+
+      function escHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
       }
     </script>
 
