@@ -2,46 +2,36 @@
 // GITHUB.gs - Push deployed JSON to GitHub
 // =============================================
 
-// --------------------------------------------
-// DEPLOY: Build payload and push to GitHub
-// Called from the CMS Manager menu
-// --------------------------------------------
 function deployToGithub() {
   var ui = SpreadsheetApp.getUi();
 
   try {
-    var token    = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
-    if (!token)  throw new Error('GITHUB_TOKEN is not set in Script Properties.');
+    var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+    if (!token) throw new Error('GITHUB_TOKEN is not set in Script Properties.');
 
-    var payload  = buildDeployedPayload();
-    var json     = JSON.stringify(payload, null, 2);
-    var encoded  = Utilities.base64Encode(json);
+    var payload = buildDeployedPayload();
+    var json    = JSON.stringify(payload, null, 2);
+    var encoded = Utilities.base64Encode(Utilities.newBlob(json).getBytes());
 
-    var apiUrl   = 'https://api.github.com/repos/'
-                 + CONFIG.GITHUB_OWNER + '/'
-                 + CONFIG.GITHUB_REPO
-                 + '/contents/'
-                 + CONFIG.GITHUB_FILE_PATH;
+    var apiUrl  = 'https://api.github.com/repos/'
+                + CONFIG.GITHUB_OWNER + '/'
+                + CONFIG.GITHUB_REPO
+                + '/contents/'
+                + CONFIG.GITHUB_FILE_PATH;
 
-    // Check if the file already exists so we can pass the required SHA
-    var sha      = getGithubFileSha(apiUrl, token);
+    var sha     = getGithubFileSha(apiUrl, token);
 
-    var body     = {
+    var body    = {
       message: 'CMS deploy: ' + new Date().toISOString(),
       branch:  CONFIG.GITHUB_BRANCH,
       content: encoded
     };
+    if (sha) body.sha = sha;
 
-    if (sha) body.sha = sha; // Required by GitHub API to update an existing file
-
-    var options  = {
+    var options = {
       method:      'PUT',
       contentType: 'application/json',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Accept':        'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28'
-      },
+      headers:     buildHeaders(token),
       payload:     JSON.stringify(body),
       muteHttpExceptions: true
     };
@@ -51,23 +41,33 @@ function deployToGithub() {
     var result   = JSON.parse(response.getContentText());
 
     if (code === 200 || code === 201) {
-      var fileUrl = result.content && result.content.html_url
-                  ? result.content.html_url
-                  : apiUrl;
-
       ui.alert(
         'Deploy Successful',
-        'JSON pushed to GitHub.\n\nFile: ' + CONFIG.GITHUB_FILE_PATH
-        + '\nBranch: ' + CONFIG.GITHUB_BRANCH
-        + '\nCommit: ' + (result.commit && result.commit.sha
-                          ? result.commit.sha.substring(0, 7)
-                          : 'n/a'),
+        'data/cms.json pushed to GitHub.\n\n'
+        + 'Branch: ' + CONFIG.GITHUB_BRANCH + '\n'
+        + 'Commit: ' + (result.commit && result.commit.sha
+                         ? result.commit.sha.substring(0, 7) : 'n/a'),
         ui.ButtonSet.OK
       );
-
+    } else if (code === 403) {
+      throw new Error(
+        'Permission denied (403).\n\n'
+        + 'Your token needs "Contents: Read and write" permission.\n\n'
+        + 'Fix options:\n'
+        + '1. Classic token: make sure the "repo" scope is checked.\n'
+        + '2. Fine-grained token: go to Settings → Developer settings → '
+        + 'Fine-grained tokens → edit your token → Repository permissions '
+        + '→ Contents → Read and write.\n\n'
+        + 'GitHub message: ' + (result.message || '')
+      );
+    } else if (code === 404) {
+      throw new Error(
+        'Repo not found (404). Check GITHUB_OWNER and GITHUB_REPO in Config.js.\n'
+        + 'Current values: ' + CONFIG.GITHUB_OWNER + '/' + CONFIG.GITHUB_REPO + '\n\n'
+        + 'GitHub message: ' + (result.message || '')
+      );
     } else {
-      throw new Error('GitHub API returned ' + code + ': '
-                    + (result.message || response.getContentText()));
+      throw new Error('GitHub API returned ' + code + ': ' + (result.message || response.getContentText()));
     }
 
   } catch (err) {
@@ -77,28 +77,19 @@ function deployToGithub() {
 }
 
 // --------------------------------------------
-// HELPER: Fetch the current SHA of the file
-// GitHub requires this to update an existing file
+// HELPER: Fetch current SHA (needed to update an existing file)
 // --------------------------------------------
 function getGithubFileSha(apiUrl, token) {
   try {
-    var options  = {
+    var response = UrlFetchApp.fetch(apiUrl, {
       method:  'GET',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Accept':        'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28'
-      },
+      headers: buildHeaders(token),
       muteHttpExceptions: true
-    };
-
-    var response = UrlFetchApp.fetch(apiUrl, options);
+    });
     if (response.getResponseCode() === 200) {
-      var data = JSON.parse(response.getContentText());
-      return data.sha || null;
+      return JSON.parse(response.getContentText()).sha || null;
     }
-    return null; // File does not exist yet
-
+    return null;
   } catch (err) {
     Logger.log('getGithubFileSha error: ' + err.message);
     return null;
@@ -106,12 +97,23 @@ function getGithubFileSha(apiUrl, token) {
 }
 
 // --------------------------------------------
-// PREVIEW: Log the payload without pushing
-// Run from the Apps Script editor to test
+// HELPER: Build auth headers — uses "token" prefix
+// which works for both classic and fine-grained PATs
+// --------------------------------------------
+function buildHeaders(token) {
+  return {
+    'Authorization':        'token ' + token,
+    'Accept':               'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'User-Agent':           'JPAR-CMS-Script'
+  };
+}
+
+// --------------------------------------------
+// PREVIEW: Log payload without pushing (debug)
 // --------------------------------------------
 function previewDeployPayload() {
-  var payload = buildDeployedPayload();
-  Logger.log(JSON.stringify(payload, null, 2));
+  Logger.log(JSON.stringify(buildDeployedPayload(), null, 2));
   SpreadsheetApp.getUi().alert(
     'Payload Preview',
     'Check the Apps Script Logs for the full JSON output.',

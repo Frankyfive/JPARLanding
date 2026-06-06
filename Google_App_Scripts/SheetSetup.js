@@ -9,6 +9,61 @@ var SHEET_HEADERS = [
 ];
 
 // --------------------------------------------
+// SETUP: Ensure all 3 required tabs exist with
+// the correct headers. Safe to run on existing
+// sheets — only adds missing columns, never
+// deletes data. Run this first if preview is blank.
+// --------------------------------------------
+function setupSheets() {
+  var ss  = SpreadsheetApp.getActiveSpreadsheet();
+  var ui  = SpreadsheetApp.getUi();
+  var log = [];
+
+  Object.values(CONFIG.SHEETS).forEach(function(tabName) {
+    var sheet = ss.getSheetByName(tabName);
+
+    if (!sheet) {
+      // Create tab from scratch
+      sheet = ss.insertSheet(tabName);
+      sheet.appendRow(SHEET_HEADERS);
+      sheet.getRange(1, 1, 1, SHEET_HEADERS.length)
+        .setFontWeight('bold')
+        .setBackground('#00326D')
+        .setFontColor('#FFFFFF');
+      sheet.setFrozenRows(1);
+      log.push('Created: ' + tabName);
+    } else {
+      // Tab exists — check if headers match
+      var existing = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      var needsfix = false;
+
+      SHEET_HEADERS.forEach(function(h, i) {
+        if (existing[i] !== h) needsfix = true;
+      });
+
+      if (needsfix) {
+        // Write correct headers into row 1 (preserves all data rows)
+        sheet.getRange(1, 1, 1, SHEET_HEADERS.length).setValues([SHEET_HEADERS]);
+        sheet.getRange(1, 1, 1, SHEET_HEADERS.length)
+          .setFontWeight('bold')
+          .setBackground('#00326D')
+          .setFontColor('#FFFFFF');
+        sheet.setFrozenRows(1);
+        log.push('Fixed headers: ' + tabName);
+      } else {
+        log.push('OK: ' + tabName);
+      }
+    }
+  });
+
+  ui.alert(
+    'Sheet Setup Complete',
+    log.join('\n') + '\n\nReopen the spreadsheet to refresh the Add Content menu.',
+    ui.ButtonSet.OK
+  );
+}
+
+// --------------------------------------------
 // ADD: Create a new sheet tab with standard headers.
 // Called from the CMS Manager → Add New Tab menu.
 // --------------------------------------------

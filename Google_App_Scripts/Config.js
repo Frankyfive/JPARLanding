@@ -9,8 +9,8 @@ var CONFIG = {
 
   // GitHub
   GITHUB_TOKEN:     PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN'),
-  GITHUB_OWNER:     'your-github-username',
-  GITHUB_REPO:      'your-repo-name',
+  GITHUB_OWNER:     'Frankyfive',
+  GITHUB_REPO:      'JPARLanding',
   GITHUB_BRANCH:    'main',
   GITHUB_FILE_PATH: 'data/cms.json',
 
