@@ -3,16 +3,45 @@
 // =============================================
 
 // --------------------------------------------
+// AUTO-FOLDER: Get the configured Drive folder,
+// or create one automatically if DRIVE_FOLDER_ID
+// is not set. Saves the new ID to Script Properties
+// so it persists for future uploads.
+// --------------------------------------------
+function getOrCreateCMSFolder() {
+  var props    = PropertiesService.getScriptProperties();
+  var folderId = props.getProperty('DRIVE_FOLDER_ID');
+
+  if (folderId) {
+    try {
+      return DriveApp.getFolderById(folderId);
+    } catch (e) {
+      Logger.log('Stored DRIVE_FOLDER_ID invalid, will create new folder: ' + e.message);
+    }
+  }
+
+  var folderName = 'JPAR CMS Media';
+  var existing   = DriveApp.getFoldersByName(folderName);
+  var folder     = existing.hasNext() ? existing.next() : DriveApp.createFolder(folderName);
+
+  // Make files in the folder viewable by anyone with the link
+  folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+  // Persist so next call uses the same folder
+  props.setProperty('DRIVE_FOLDER_ID', folder.getId());
+  Logger.log('CMS Drive folder ready: ' + folder.getId());
+
+  return folder;
+}
+
+// --------------------------------------------
 // UPLOAD: Receives base64 data from the form,
-// saves to the configured Drive folder,
+// saves to the CMS Drive folder,
 // returns the public file URL
 // --------------------------------------------
 function uploadImageToDrive(base64Data, fileName, mimeType) {
   try {
-    var folderId = PropertiesService.getScriptProperties().getProperty('DRIVE_FOLDER_ID');
-    if (!folderId) throw new Error('DRIVE_FOLDER_ID is not set in Script Properties.');
-
-    var folder  = DriveApp.getFolderById(folderId);
+    var folder  = getOrCreateCMSFolder();
     var decoded = Utilities.base64Decode(base64Data);
     var blob    = Utilities.newBlob(decoded, mimeType, fileName);
     var file    = folder.createFile(blob);
@@ -22,7 +51,6 @@ function uploadImageToDrive(base64Data, fileName, mimeType) {
     var fileId  = file.getId();
     var fileUrl = 'https://drive.google.com/uc?export=view&id=' + fileId;
 
-    // Return a plain object - no prototype methods, safe for google.script.run
     return {
       success:  true,
       fileId:   fileId,
@@ -32,7 +60,6 @@ function uploadImageToDrive(base64Data, fileName, mimeType) {
 
   } catch (err) {
     Logger.log('uploadImageToDrive error: ' + err.message);
-    // Must return a plain serializable object - never throw across google.script.run
     return {
       success: false,
       error:   err.message
@@ -42,33 +69,25 @@ function uploadImageToDrive(base64Data, fileName, mimeType) {
 
 // --------------------------------------------
 // LIST: Get all images in the CMS Drive folder
-// Useful for a future media picker
 // --------------------------------------------
 function getDriveFolderImages() {
   try {
-    var folderId = CONFIG.DRIVE_FOLDER_ID;
-    if (!folderId) throw new Error('DRIVE_FOLDER_ID is not set in Script Properties.');
-
-    var folder  = DriveApp.getFolderById(folderId);
+    var folder  = getOrCreateCMSFolder();
     var files   = folder.getFiles();
     var results = [];
 
     while (files.hasNext()) {
-      var file     = files.next();
-      var mimeType = file.getMimeType();
-
-      // Only return image files
-      if (mimeType.indexOf('image/') === 0) {
+      var file = files.next();
+      if (file.getMimeType().indexOf('image/') === 0) {
         results.push({
           fileId:   file.getId(),
           fileName: file.getName(),
           fileUrl:  'https://drive.google.com/uc?export=view&id=' + file.getId(),
-          mimeType: mimeType,
+          mimeType: file.getMimeType(),
           created:  file.getDateCreated().toISOString()
         });
       }
     }
-
     return results;
 
   } catch (err) {

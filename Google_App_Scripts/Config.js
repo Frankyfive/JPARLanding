@@ -21,17 +21,18 @@ var CONFIG = {
   SHEETS: {
     JPAR_EVENTS:     'JPAR Events',
     JPAR_TX_EVENTS:  'JPAR TX Events',
-    DIGITAL_LIBRARY: 'Digital Library'
+    DIGITAL_LIBRARY: 'Digital Library',
+    EVENT_TYPES:     'Event Types'
   },
 
-  // Status values
+  // Status values (always lowercase)
   STATUS: {
     ARCHIVE:  'archive',
     TESTING:  'testing',
     DEPLOYED: 'deployed'
   },
 
-  // Column index map (0-based) — same for all tabs
+  // Column index map (0-based) — same for all content tabs
   // Headers: ID | Title | Event Type | Description | Date | Time | Info | URL | Graphic | Status | UPDATED_AT
   COLS: {
     ID:          0,

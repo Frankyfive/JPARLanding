@@ -6,10 +6,10 @@ function onOpen() {
   var ss  = SpreadsheetApp.getActiveSpreadsheet();
   var ui  = SpreadsheetApp.getUi();
 
-  // Build "Add Content" submenu dynamically from existing sheet tabs
+  // Build "Add Content" submenu dynamically from existing content sheet tabs
   var sheetNames = ss.getSheets()
     .map(function(s) { return s.getName(); })
-    .filter(function(n) { return n !== 'Sheet1'; });
+    .filter(function(n) { return ['Sheet1', CONFIG.SHEETS.EVENT_TYPES].indexOf(n) === -1; });
 
   // Cache names in Script Properties so numbered handlers can look them up
   var props = PropertiesService.getScriptProperties();
@@ -26,11 +26,14 @@ function onOpen() {
   ui.createMenu('CMS Manager')
     .addSubMenu(addMenu)
     .addSeparator()
-    .addItem('Diagnose CMS',           'diagnoseCMS')
-    .addItem('Migrate Old Sheets',     'migrateOldSheets')
-    .addItem('Setup Sheets',           'setupSheets')
-    .addItem('Add New Tab',            'addNewTab')
-    .addItem('Backfill Existing Rows', 'backfillExistingRows')
+    .addItem('Diagnose CMS',               'diagnoseCMS')
+    .addItem('Migrate Old Sheets',         'migrateOldSheets')
+    .addItem('Setup Sheets',               'setupSheets')
+    .addItem('Setup Event Types',          'setupEventTypesTab')
+    .addItem('Add New Tab',                'addNewTab')
+    .addItem('Backfill Existing Rows',     'backfillExistingRows')
+    .addSeparator()
+    .addItem('Setup Auto-Archive Trigger', 'setupArchiveTrigger')
     .addSeparator()
     .addSubMenu(
       ui.createMenu('Deploy')
@@ -40,10 +43,7 @@ function onOpen() {
     .addToUi();
 }
 
-// ------------------------------------------------
-// Dynamic tab form handlers (supports up to 10 tabs)
-// Looks up the sheet name stored in onOpen()
-// ------------------------------------------------
+// ── Dynamic tab form handlers (supports up to 10 tabs) ──────────
 function showFormTab0() { showForm(PropertiesService.getScriptProperties().getProperty('_FORM_TAB_0')); }
 function showFormTab1() { showForm(PropertiesService.getScriptProperties().getProperty('_FORM_TAB_1')); }
 function showFormTab2() { showForm(PropertiesService.getScriptProperties().getProperty('_FORM_TAB_2')); }
@@ -55,20 +55,21 @@ function showFormTab7() { showForm(PropertiesService.getScriptProperties().getPr
 function showFormTab8() { showForm(PropertiesService.getScriptProperties().getProperty('_FORM_TAB_8')); }
 function showFormTab9() { showForm(PropertiesService.getScriptProperties().getProperty('_FORM_TAB_9')); }
 
-// Generic form launcher — opens the CMS sidebar for the given sheet tab
+// Generic form launcher — opens the CMS modal dialog for the given sheet tab
 function showForm(sheetName) {
   if (!sheetName) return;
   var template = HtmlService.createTemplateFromFile('Form');
   template.sheetName = sheetName;
   var html = template.evaluate()
-    .setTitle('CMS: Add to ' + sheetName)
-    .setWidth(420);
-  SpreadsheetApp.getUi().showSidebar(html);
+    .setWidth(820)
+    .setHeight(660)
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Add Entry — ' + sheetName);
 }
 
 // Web app entry point — used when deployed as a web app
 function doGet(e) {
-  var page = (e && e.parameter && e.parameter.tab) ? e.parameter.tab : 'JPAR Events';
+  var page     = (e && e.parameter && e.parameter.tab) ? e.parameter.tab : 'JPAR Events';
   var template = HtmlService.createTemplateFromFile('Preview');
   template.tab = page;
   return template.evaluate()
@@ -82,10 +83,10 @@ function previewTesting() {
   template.tab = 'JPAR Events';
   var html = template.evaluate()
     .setTitle('CMS Preview')
-    .setWidth(1000)
-    .setHeight(700)
+    .setWidth(1100)
+    .setHeight(740)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Preview: JPAR Events');
+  SpreadsheetApp.getUi().showModalDialog(html, 'CMS Preview');
 }
 
 // Include helper for HTML partials

@@ -141,14 +141,18 @@
         grid-template-columns: repeat(4, 1fr);
         gap: 24px;
       }
-      @media screen and (max-width: 992px) {
-        .event-calendar-grid { grid-template-columns: repeat(2, 1fr); }
+      @media screen and (max-width: 1100px) {
+        .event-calendar-grid { grid-template-columns: repeat(3, 1fr); }
       }
-      @media screen and (max-width: 575px) {
-        .event-calendar-grid { grid-template-columns: 1fr; }
-        .hero h1 { font-size: 28px; }
+      @media screen and (max-width: 768px) {
+        .event-calendar-grid { grid-template-columns: repeat(2, 1fr); }
+        .hero h1 { font-size: 30px; }
         #filters, .event-calendar-mod { padding: 16px; }
         .header { padding: 0 16px; }
+      }
+      @media screen and (max-width: 480px) {
+        .event-calendar-grid { grid-template-columns: 1fr; }
+        .hero h1 { font-size: 24px; }
       }
 
       /* ── Card ────────────────────────────────── */
@@ -175,6 +179,7 @@
         width: 100%;
         height: 200px;
         object-fit: cover;
+        object-position: top center;
         display: block;
       }
       .event-calendar-event-image-placeholder {
@@ -342,6 +347,12 @@
       <div class="filters-row">
         <select id="typeFilter"><option value="">Filter by Type</option></select>
         <select id="locationFilter"><option value="">Filter by Location</option></select>
+        <select id="statusFilter">
+          <option value="all">All Status</option>
+          <option value="deployed">Deployed</option>
+          <option value="testing">Testing</option>
+          <option value="archive">Archived</option>
+        </select>
         <button class="btn-apply" onclick="applyFilters()">Apply Filters</button>
       </div>
       <a class="clear-link" href="#" onclick="clearFilters(); return false;">Clear Filters</a>
@@ -459,6 +470,30 @@
         })
         .getAllRows(CURRENT_TAB);
 
+      // ── Date / time formatters ────────────────────────────────────
+      // Handles: Date objects, millisecond numbers, ISO strings, YYYY-MM-DD strings
+      function formatDate(val) {
+        if (!val) return '';
+        var d = (typeof val === 'number' || typeof val === 'string') ? new Date(val) : val;
+        if (isNaN(d.getTime())) return String(val);
+        // Use UTC to prevent midnight-CST dates from shifting a day in other timezones
+        return d.toLocaleDateString('en-US', {
+          year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+        });
+      }
+
+      function formatTime(val) {
+        if (!val) return '';
+        if (typeof val === 'string') return val;  // already formatted, e.g. "2:00 PM CT"
+        if (typeof val === 'number') {
+          var d = new Date(val);
+          if (!isNaN(d.getTime())) {
+            return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }) + ' CT';
+          }
+        }
+        return String(val);
+      }
+
       // ── Render cards ──────────────────────────────────────────────
       function renderCards(rows) {
         var grid = document.getElementById('grid');
@@ -469,20 +504,25 @@
           return;
         }
 
+        // Sort by date ascending (Digital Library has no meaningful date order)
+        if (CURRENT_TAB !== 'Digital Library') {
+          rows = rows.slice().sort(function(a, b) {
+            var da = a['Date'] ? new Date(a['Date']).getTime() : Infinity;
+            var db = b['Date'] ? new Date(b['Date']).getTime() : Infinity;
+            return da - db;
+          });
+        }
+
         rows.forEach(function(row) {
           var graphic   = row['Graphic']      || '';
           var title     = row['Title']        || 'Untitled';
           var desc      = row['Description']  || '';
           var eventType = (row['Event Type']  || '').toUpperCase();
-          var date      = row['Date']         || '';
-          var time      = row['Time']         || '';
+          var dateStr   = formatDate(row['Date']);
+          var timeStr   = formatTime(row['Time']);
           var info      = row['Info']         || '';
           var url       = row['URL']          || '';
-
-          // Format Date objects from the sheet
-          if (date && typeof date.toLocaleDateString === 'function') {
-            date = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-          }
+          var status    = String(row['Status'] || '').toLowerCase();
 
           var imgHtml = graphic
             ? '<div class="event-calendar-event-image"><img src="' + escHtml(graphic) + '" alt="' + escHtml(title) + '" loading="lazy"></div>'
@@ -492,12 +532,12 @@
             ? '<div class="event-calendar-event-type-container"><div class="event-calendar-event-type"><span>' + escHtml(eventType) + '</span></div></div>'
             : '';
 
-          var dateRow = date
-            ? '<div class="event-calendar-event-date"><div class="event-calendar-date-icon">' + ICON_CALENDAR + '</div><div class="event-calendar-date-text"><span>' + escHtml(String(date)) + '</span></div></div>'
+          var dateRow = dateStr
+            ? '<div class="event-calendar-event-date"><div class="event-calendar-date-icon">' + ICON_CALENDAR + '</div><div class="event-calendar-date-text"><span>' + escHtml(dateStr) + '</span></div></div>'
             : '';
 
-          var timeRow = time
-            ? '<div class="event-calendar-event-time"><div class="event-calendar-time-icon">' + ICON_CLOCK + '</div><div class="event-calendar-time-text"><span>' + escHtml(String(time)) + '</span></div></div>'
+          var timeRow = timeStr
+            ? '<div class="event-calendar-event-time"><div class="event-calendar-time-icon">' + ICON_CLOCK + '</div><div class="event-calendar-time-text"><span>' + escHtml(timeStr) + '</span></div></div>'
             : '';
 
           var infoRow = info
@@ -509,23 +549,27 @@
             : '';
 
           var card = document.createElement('div');
-          card.className       = 'event-calendar-event-card';
-          card.dataset.eventType = eventType;
-          card.dataset.info      = info;
+          card.className           = 'event-calendar-event-card';
+          card.dataset.eventType   = eventType;
+          card.dataset.info        = info;
+          card.dataset.status      = status;
 
           card.innerHTML =
             '<div class="event-calendar-event-card-inner">' +
               imgHtml +
               typeBadge +
               '<div class="event-calendar-card-text-content">' +
-                '<div class="event-calendar-event-title">'       + escHtml(title) + '</div>' +
-                '<div class="event-calendar-event-description">' + escHtml(desc)  + '</div>' +
+                '<div class="event-calendar-event-title">' + escHtml(title) + '</div>' +
+                '<div class="event-calendar-event-description"></div>' +
                 '<div class="event-calendar-event-details">' +
                   dateRow + timeRow + infoRow +
                 '</div>' +
                 ctaHtml +
               '</div>' +
             '</div>';
+
+          // Set description as innerHTML to render Quill-formatted content
+          card.querySelector('.event-calendar-event-description').innerHTML = desc;
 
           grid.appendChild(card);
         });
@@ -554,18 +598,21 @@
       }
 
       function applyFilters() {
-        var type = document.getElementById('typeFilter').value;
-        var city = document.getElementById('locationFilter').value;
+        var type   = document.getElementById('typeFilter').value;
+        var city   = document.getElementById('locationFilter').value;
+        var status = document.getElementById('statusFilter').value;
         document.querySelectorAll('.event-calendar-event-card').forEach(function(card) {
-          var matchType = !type || card.dataset.eventType === type;
-          var matchCity = !city || extractCity(card.dataset.info || '') === city;
-          card.style.display = (matchType && matchCity) ? '' : 'none';
+          var matchType   = !type   || card.dataset.eventType === type;
+          var matchCity   = !city   || extractCity(card.dataset.info || '') === city;
+          var matchStatus = !status || status === 'all' || card.dataset.status === status;
+          card.style.display = (matchType && matchCity && matchStatus) ? '' : 'none';
         });
       }
 
       function clearFilters() {
         document.getElementById('typeFilter').value     = '';
         document.getElementById('locationFilter').value = '';
+        document.getElementById('statusFilter').value   = 'all';
         document.querySelectorAll('.event-calendar-event-card').forEach(function(c) {
           c.style.display = '';
         });

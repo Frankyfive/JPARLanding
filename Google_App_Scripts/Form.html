@@ -1,278 +1,521 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <base target="_top">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      body {
-        font-family: 'Nunito Sans', sans-serif;
-        background: #f7f9fc;
-        color: #00326D;
-        padding: 20px 16px;
-        font-size: 14px;
-      }
-      .cms-header {
-        display: flex; align-items: center; gap: 10px;
-        margin-bottom: 20px; padding-bottom: 12px;
-        border-bottom: 2px solid #00326D;
-      }
-      .badge {
-        background: #00326D; color: #fff;
-        font-size: 11px; font-weight: 800;
-        padding: 3px 8px; border-radius: 20px;
-        text-transform: uppercase; letter-spacing: 0.5px;
-        white-space: nowrap;
-      }
-      .cms-header h2 { font-size: 16px; font-weight: 800; }
-      .form-group { margin-bottom: 14px; }
-      label {
-        display: block; font-weight: 600;
-        margin-bottom: 5px; font-size: 13px; color: #00326D;
-      }
-      .required { color: #e53e3e; margin-left: 2px; }
-      input[type="text"], input[type="url"], input[type="date"],
-      input[type="time"], textarea, select {
-        width: 100%; padding: 9px 11px;
-        border: 1.5px solid #cbd5e0; border-radius: 6px;
-        font-family: 'Nunito Sans', sans-serif;
-        font-size: 13px; color: #00326D;
-        background: #fff; outline: none;
-        transition: border-color 0.2s;
-      }
-      input:focus, textarea:focus, select:focus { border-color: #00C6AB; }
-      textarea { resize: vertical; min-height: 80px; }
-      .hint { font-size: 11px; color: #a0aec0; margin-top: 4px; }
-      .image-preview-wrap { margin-top: 8px; display: none; }
-      .image-preview-wrap img {
-        width: 100%; max-height: 130px; object-fit: cover;
-        border-radius: 6px; border: 1.5px solid #cbd5e0;
-      }
-      .mode-toggle { display: flex; gap: 8px; margin-bottom: 8px; }
-      .mode-btn {
-        flex: 1; padding: 6px; border-radius: 6px;
-        border: 1.5px solid #cbd5e0; background: #fff;
-        font-family: 'Nunito Sans', sans-serif;
-        font-size: 12px; font-weight: 600; color: #718096; cursor: pointer;
-      }
-      .mode-btn.active { border-color: #00326D; background: #00326D; color: #fff; }
-      .status-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-      .status-pills input[type="radio"] { display: none; }
-      .status-pills label {
-        cursor: pointer; padding: 5px 14px; border-radius: 20px;
-        border: 1.5px solid #cbd5e0; font-size: 12px; font-weight: 600;
-        color: #718096; background: #fff; transition: all 0.15s; margin: 0;
-      }
-      .status-pills input#status-deployed:checked + label { background: #00C6AB; border-color: #00C6AB; color: #fff; }
-      .status-pills input#status-testing:checked  + label { background: #f6ad55; border-color: #f6ad55; color: #fff; }
-      .status-pills input#status-archive:checked  + label { background: #a0aec0; border-color: #a0aec0; color: #fff; }
-      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-      .btn-row { display: flex; gap: 8px; margin-top: 20px; }
-      .btn {
-        flex: 1; padding: 10px; border: none; border-radius: 6px;
-        font-family: 'Nunito Sans', sans-serif;
-        font-weight: 800; font-size: 13px; cursor: pointer;
-      }
-      .btn-primary { background: #00326D; color: #fff; }
-      .btn-reset   { background: #edf2f7; color: #00326D; }
-      .msg {
-        margin-top: 14px; padding: 10px 12px;
-        border-radius: 6px; font-size: 13px; font-weight: 600; display: none;
-      }
-      .msg.success { background: #c6f6d5; color: #276749; display: block; }
-      .msg.error   { background: #fed7d7; color: #9b2c2c; display: block; }
-      .spinner { display: none; text-align: center; padding: 10px 0; font-size: 12px; color: #a0aec0; }
-    </style>
-  </head>
-  <body>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <div class="cms-header">
-      <span class="badge"><?= sheetName ?></span>
-      <h2>Add New Entry</h2>
-    </div>
+    html, body { height: 100%; overflow: hidden; font-family: 'Nunito Sans', sans-serif; font-size: 13px; }
 
+    /* ── Layout ──────────────────────────────── */
+    .dialog-wrap {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #f7f9fc;
+      color: #2d3748;
+    }
+
+    .cms-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      background: #00326D;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .cms-badge {
+      background: rgba(255,255,255,0.22);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .cms-header h2 { font-size: 14px; font-weight: 800; color: #fff; }
+
+    .form-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px 8px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      padding: 10px 20px;
+      background: #f7f9fc;
+      border-top: 1px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+
+    /* ── Grid ─────────────────────────────────── */
+    .two-col-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    /* ── Form elements ───────────────────────── */
+    .form-group { margin-bottom: 11px; }
+
+    label {
+      display: block;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #718096;
+      margin-bottom: 4px;
+    }
+    .required { color: #e53e3e; }
+    .hint { font-size: 11px; color: #a0aec0; margin-top: 3px; }
+
+    input[type="text"], input[type="url"], input[type="date"],
+    input[type="time"], textarea, select {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 5px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px;
+      color: #2d3748;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: #00C6AB; }
+    textarea { resize: vertical; min-height: 55px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* ── Quill ────────────────────────────────── */
+    .ql-toolbar.ql-snow { border-color: #cbd5e0; border-radius: 5px 5px 0 0; padding: 6px; }
+    .ql-container.ql-snow { border-color: #cbd5e0; border-radius: 0 0 5px 5px; font-family: 'Nunito Sans', sans-serif; font-size: 13px; }
+    .ql-editor { min-height: 140px; }
+    .ql-editor.ql-blank::before { font-style: normal; color: #a0aec0; font-size: 13px; }
+
+    /* ── Image ───────────────────────────────── */
+    .mode-toggle { display: flex; gap: 6px; margin-bottom: 7px; }
+    .mode-btn {
+      flex: 1; padding: 5px; border-radius: 5px;
+      border: 1.5px solid #cbd5e0; background: #fff;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 11px; font-weight: 800; color: #718096; cursor: pointer; transition: all 0.15s;
+    }
+    .mode-btn.active { border-color: #00326D; background: #00326D; color: #fff; }
+    .img-preview { margin-top: 6px; display: none; }
+    .img-preview img { width: 100%; max-height: 90px; object-fit: cover; border-radius: 5px; border: 1.5px solid #cbd5e0; }
+
+    /* ── Recurring ───────────────────────────── */
+    .recurring-box {
+      background: #ebf8ff;
+      border: 1.5px solid #bee3f8;
+      border-radius: 6px;
+      padding: 11px 14px;
+      margin-bottom: 10px;
+    }
+    .recurring-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      color: #00326D;
+    }
+    .recurring-toggle-label input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; }
+    .recurring-options { margin-top: 12px; }
+
+    .day-pills { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+    .day-pill { position: relative; }
+    .day-pill input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+    .day-pill-lbl {
+      display: block;
+      cursor: pointer;
+      padding: 4px 9px;
+      border-radius: 4px;
+      border: 1.5px solid #cbd5e0;
+      font-size: 12px; font-weight: 800;
+      color: #718096; background: #fff;
+      user-select: none; transition: all 0.15s;
+    }
+    .day-pill input[type="checkbox"]:checked + .day-pill-lbl {
+      border-color: #00326D; background: #00326D; color: #fff;
+    }
+
+    /* ── Buttons ─────────────────────────────── */
+    .btn {
+      flex: 1; padding: 9px; border: none; border-radius: 6px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 800; font-size: 13px; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-primary { background: #00326D; color: #fff; }
+    .btn-primary:hover { background: #002255; }
+    .btn-reset { background: #edf2f7; color: #4a5568; }
+    .btn-reset:hover { background: #e2e8f0; }
+
+    /* ── Messages ────────────────────────────── */
+    .msg {
+      padding: 8px 12px; border-radius: 5px;
+      font-size: 12px; font-weight: 700;
+      margin-bottom: 10px; display: none;
+    }
+    .msg.success { background: #c6f6d5; color: #276749; display: block; }
+    .msg.error   { background: #fed7d7; color: #9b2c2c; display: block; }
+    .spinner { text-align: center; padding: 6px 0; font-size: 12px; color: #a0aec0; display: none; }
+  </style>
+</head>
+<body>
+
+<div class="dialog-wrap">
+
+  <div class="cms-header">
+    <span class="cms-badge"><?= sheetName ?></span>
+    <h2>Add New Entry</h2>
+  </div>
+
+  <div class="form-body">
     <div id="msg" class="msg"></div>
 
-    <div class="form-group">
-      <label for="title">Title <span class="required">*</span></label>
-      <input type="text" id="title" placeholder="Enter title...">
-    </div>
+    <div class="two-col-main">
 
-    <div class="form-group">
-      <label for="eventType">Event Type</label>
-      <input type="text" id="eventType" placeholder="e.g. NETWORKING, TRAINING, CE">
-    </div>
+      <!-- ── Left column ────────────────────── -->
+      <div>
+        <div class="form-group">
+          <label>Title <span class="required">*</span></label>
+          <input type="text" id="title" placeholder="Enter title...">
+        </div>
 
-    <div class="form-group">
-      <label for="description">Description <span class="required">*</span></label>
-      <textarea id="description" placeholder="Enter description..."></textarea>
-    </div>
+        <div class="form-group">
+          <label>Event Type</label>
+          <select id="eventType">
+            <option value="">Select type...</option>
+          </select>
+        </div>
 
-    <div class="two-col">
-      <div class="form-group">
-        <label for="eventDate">Date</label>
-        <input type="date" id="eventDate">
+        <div id="dateGroup" class="two-col">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="eventDate">
+          </div>
+          <div class="form-group">
+            <label>Time</label>
+            <input type="time" id="eventTime">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Info / Details</label>
+          <textarea id="eventInfo" rows="2" placeholder="Location, Zoom link, CE credits, prerequisites..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Registration URL</label>
+          <input type="url" id="eventUrl" placeholder="https://...">
+        </div>
       </div>
-      <div class="form-group">
-        <label for="eventTime">Time</label>
-        <input type="time" id="eventTime">
-      </div>
-    </div>
 
-    <div class="form-group">
-      <label for="eventInfo">Info / Details</label>
-      <textarea id="eventInfo" placeholder="Location, Zoom link, CE credit info, prerequisites..."></textarea>
-    </div>
+      <!-- ── Right column ───────────────────── -->
+      <div>
+        <div class="form-group">
+          <label>Description <span class="required">*</span></label>
+          <div id="descEditor"></div>
+        </div>
 
-    <div class="form-group">
-      <label for="eventUrl">Registration / Link URL</label>
-      <input type="url" id="eventUrl" placeholder="https://www.eventbrite.com/...">
-    </div>
+        <div class="form-group">
+          <label>Graphic</label>
+          <div class="mode-toggle">
+            <button type="button" class="mode-btn active" id="btnUrl"    onclick="toggleMode('url')">URL</button>
+            <button type="button" class="mode-btn"        id="btnUpload" onclick="toggleMode('upload')">Upload</button>
+          </div>
+          <div id="modeUrl">
+            <input type="url" id="imageUrl" placeholder="https://..." oninput="previewImage(this.value)">
+          </div>
+          <div id="modeUpload" style="display:none;">
+            <input type="file" id="imageFile" accept="image/*" onchange="handleFileSelect(this)">
+            <p class="hint">Saves to "JPAR CMS Media" folder in your Drive.</p>
+          </div>
+          <div class="img-preview" id="imgPreview">
+            <img id="imgPreviewImg" src="" alt="Preview">
+          </div>
+        </div>
 
-    <div class="form-group">
-      <label>Graphic</label>
-      <div class="mode-toggle">
-        <button type="button" class="mode-btn active" id="btnUrl"    onclick="toggleMode('url')">Use URL</button>
-        <button type="button" class="mode-btn"        id="btnUpload" onclick="toggleMode('upload')">Upload File</button>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="status">
+            <option value="testing">Testing</option>
+            <option value="deployed">Deployed</option>
+            <option value="archive">Archive</option>
+          </select>
+        </div>
       </div>
-      <div id="mode-url">
-        <input type="url" id="imageUrl" placeholder="https://..." oninput="previewImage(this.value)">
-      </div>
-      <div id="mode-upload" style="display:none;">
-        <input type="file" id="imageFile" accept="image/*" onchange="handleFileSelect(this)">
-        <p class="hint">Uploads to your configured Drive folder.</p>
-      </div>
-      <div class="image-preview-wrap" id="imagePreviewWrap">
-        <img id="imagePreview" src="" alt="Preview">
-      </div>
-    </div>
 
-    <div class="form-group">
-      <label>Status</label>
-      <div class="status-pills">
-        <input type="radio" name="status" id="status-testing"  value="testing" checked>
-        <label for="status-testing">Testing</label>
-        <input type="radio" name="status" id="status-deployed" value="deployed">
-        <label for="status-deployed">Deployed</label>
-        <input type="radio" name="status" id="status-archive"  value="archive">
-        <label for="status-archive">Archive</label>
+    </div><!-- /.two-col-main -->
+
+    <!-- ── Recurring section ──────────────────── -->
+    <div class="recurring-box" id="recurringSection">
+      <label class="recurring-toggle-label">
+        <input type="checkbox" id="isRecurring" onchange="toggleRecurring(this.checked)">
+        <span>Create as Recurring Event</span>
+      </label>
+
+      <div id="recurringOptions" style="display:none;">
+        <div class="two-col" style="margin-top:10px;">
+          <div class="form-group">
+            <label>Frequency</label>
+            <select id="recurrenceType" onchange="updateRecurrenceUI()">
+              <option value="weekly">Weekly</option>
+              <option value="biweekly">Bi-Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" id="recurrenceEndDate">
+          </div>
+        </div>
+
+        <div id="weeklyDays" class="form-group">
+          <label>Days of Week</label>
+          <div class="day-pills">
+            <label class="day-pill"><input type="checkbox" name="recurDay" value="1"><span class="day-pill-lbl">M</span></label>
+            <label class="day-pill"><input type="checkbox" name="recurDay" value="2"><span class="day-pill-lbl">T</span></label>
+            <label class="day-pill"><input type="checkbox" name="recurDay" value="3"><span class="day-pill-lbl">W</span></label>
+            <label class="day-pill"><input type="checkbox" name="recurDay" value="4"><span class="day-pill-lbl">Th</span></label>
+            <label class="day-pill"><input type="checkbox" name="recurDay" value="5"><span class="day-pill-lbl">F</span></label>
+            <label class="day-pill"><input type="checkbox" name="recurDay" value="6"><span class="day-pill-lbl">Sa</span></label>
+            <label class="day-pill"><input type="checkbox" name="recurDay" value="0"><span class="day-pill-lbl">Su</span></label>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="spinner" id="spinner">Saving...</div>
+  </div><!-- /.form-body -->
 
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="submitForm()">Save Entry</button>
-      <button class="btn btn-reset"   onclick="resetForm()">Clear</button>
-    </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="submitForm()">Save Entry</button>
+    <button class="btn btn-reset"   onclick="resetForm()">Clear</button>
+  </div>
 
-    <script>
-      var SHEET_NAME = '<?= sheetName ?>';
+</div><!-- /.dialog-wrap -->
 
-      function toggleMode(mode) {
-        document.getElementById('mode-url').style.display    = mode === 'url'    ? 'block' : 'none';
-        document.getElementById('mode-upload').style.display = mode === 'upload' ? 'block' : 'none';
-        document.getElementById('btnUrl').className    = 'mode-btn' + (mode === 'url'    ? ' active' : '');
-        document.getElementById('btnUpload').className = 'mode-btn' + (mode === 'upload' ? ' active' : '');
+<script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
+<script>
+  var SHEET_NAME         = '<?= sheetName ?>';
+  var IS_DIGITAL_LIBRARY = SHEET_NAME === 'Digital Library';
+
+  // ── Quill rich-text editor ──────────────────────────────────
+  var quill = new Quill('#descEditor', {
+    theme: 'snow',
+    placeholder: 'Enter description...',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link'],
+        ['clean']
+      ]
+    }
+  });
+
+  // ── Init ────────────────────────────────────────────────────
+  (function init() {
+    // Load event types from the Event Types sheet
+    google.script.run
+      .withSuccessHandler(function(types) {
+        var sel = document.getElementById('eventType');
+        types.forEach(function(t) { sel.add(new Option(t, t)); });
+        sel.add(new Option('+ Add new type...', '__new__'));
+      })
+      .getEventTypes();
+
+    // Digital Library: hide date and recurring (date is ignored per spec)
+    if (IS_DIGITAL_LIBRARY) {
+      document.getElementById('dateGroup').style.display      = 'none';
+      document.getElementById('recurringSection').style.display = 'none';
+    }
+  })();
+
+  // ── Event Type: inline add-new ──────────────────────────────
+  document.getElementById('eventType').addEventListener('change', function() {
+    if (this.value !== '__new__') return;
+    var newType = prompt('Enter new event type name:');
+    if (!newType || !newType.trim()) { this.value = ''; return; }
+
+    var sel = this;
+    google.script.run
+      .withSuccessHandler(function(saved) {
+        var opt = new Option(saved, saved);
+        sel.insertBefore(opt, sel.options[sel.options.length - 1]);
+        sel.value = saved;
+      })
+      .withFailureHandler(function(err) { alert('Could not add type: ' + err.message); })
+      .addEventType(newType.trim());
+  });
+
+  // ── Image toggle ────────────────────────────────────────────
+  function toggleMode(mode) {
+    document.getElementById('modeUrl').style.display    = mode === 'url'    ? 'block' : 'none';
+    document.getElementById('modeUpload').style.display = mode === 'upload' ? 'block' : 'none';
+    document.getElementById('btnUrl').className    = 'mode-btn' + (mode === 'url'    ? ' active' : '');
+    document.getElementById('btnUpload').className = 'mode-btn' + (mode === 'upload' ? ' active' : '');
+  }
+
+  function previewImage(url) {
+    var wrap = document.getElementById('imgPreview');
+    if (url && url.startsWith('http')) {
+      document.getElementById('imgPreviewImg').src = url;
+      wrap.style.display = 'block';
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+
+  function handleFileSelect(input) {
+    var file = input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var dataUrl = e.target.result;
+      document.getElementById('imgPreviewImg').src           = dataUrl;
+      document.getElementById('imgPreview').style.display    = 'block';
+      setLoading(true);
+      google.script.run
+        .withSuccessHandler(function(result) {
+          setLoading(false);
+          if (result && result.success) {
+            document.getElementById('imageUrl').value = result.fileUrl;
+            showMsg('Uploaded: ' + result.fileName, 'success');
+          } else {
+            showMsg('Upload failed: ' + (result ? result.error : 'Unknown error'), 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          setLoading(false);
+          showMsg('Upload error: ' + err.message, 'error');
+        })
+        .uploadImageToDrive(dataUrl.split(',')[1], file.name, file.type);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── Recurring controls ──────────────────────────────────────
+  function toggleRecurring(checked) {
+    document.getElementById('recurringOptions').style.display = checked ? 'block' : 'none';
+    if (checked) updateRecurrenceUI();
+  }
+
+  function updateRecurrenceUI() {
+    var type = document.getElementById('recurrenceType').value;
+    document.getElementById('weeklyDays').style.display = (type === 'weekly') ? 'block' : 'none';
+  }
+
+  // ── Time formatter: "14:30" → "2:30 PM CT" ─────────────────
+  function fmtTime(val) {
+    if (!val) return '';
+    var parts = val.split(':');
+    var h     = parseInt(parts[0], 10);
+    var m     = parts[1] || '00';
+    var ampm  = h >= 12 ? 'PM' : 'AM';
+    var h12   = h % 12 || 12;
+    return h12 + ':' + m + ' ' + ampm + ' CT';
+  }
+
+  // ── Submit ──────────────────────────────────────────────────
+  function submitForm() {
+    var title    = document.getElementById('title').value.trim();
+    var descText = quill.getText().trim();
+
+    if (!title)    return showMsg('Title is required.', 'error');
+    if (!descText) return showMsg('Description is required.', 'error');
+
+    var etVal = document.getElementById('eventType').value;
+
+    var rowData = {
+      title:       title,
+      eventType:   (etVal === '__new__') ? '' : etVal,
+      description: quill.root.innerHTML,
+      date:        document.getElementById('eventDate').value,
+      time:        fmtTime(document.getElementById('eventTime').value),
+      info:        document.getElementById('eventInfo').value.trim(),
+      url:         document.getElementById('eventUrl').value.trim(),
+      graphic:     document.getElementById('imageUrl').value.trim(),
+      status:      document.getElementById('status').value
+    };
+
+    var isRecurring = !IS_DIGITAL_LIBRARY && document.getElementById('isRecurring').checked;
+
+    if (isRecurring) {
+      if (!rowData.date)   return showMsg('Start date required for recurring.', 'error');
+      var endDate = document.getElementById('recurrenceEndDate').value;
+      if (!endDate)        return showMsg('End date required for recurring.', 'error');
+
+      var recurrence = {
+        type:    document.getElementById('recurrenceType').value,
+        endDate: endDate,
+        days:    Array.from(document.querySelectorAll('input[name="recurDay"]:checked'))
+                   .map(function(c) { return parseInt(c.value, 10); })
+      };
+
+      if (recurrence.type === 'weekly' && recurrence.days.length === 0) {
+        return showMsg('Select at least one day for weekly recurrence.', 'error');
       }
 
-      function previewImage(url) {
-        var wrap = document.getElementById('imagePreviewWrap');
-        var img  = document.getElementById('imagePreview');
-        if (url && url.startsWith('http')) {
-          img.src = url;
-          wrap.style.display = 'block';
-        } else {
-          wrap.style.display = 'none';
-        }
-      }
+      setLoading(true);
+      google.script.run
+        .withSuccessHandler(function(ids) {
+          setLoading(false);
+          showMsg('Created ' + ids.length + ' recurring event' + (ids.length > 1 ? 's' : '') + '!', 'success');
+          resetForm();
+        })
+        .withFailureHandler(function(err) { setLoading(false); showMsg('Error: ' + err.message, 'error'); })
+        .createRecurringEvents(SHEET_NAME, rowData, recurrence);
 
-      function handleFileSelect(input) {
-        var file = input.files[0];
-        if (!file) return;
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          var dataUrl = e.target.result;
-          var base64  = dataUrl.split(',')[1];
-          document.getElementById('imagePreview').src              = dataUrl;
-          document.getElementById('imagePreviewWrap').style.display = 'block';
-          setLoading(true);
-          google.script.run
-            .withSuccessHandler(function(result) {
-              setLoading(false);
-              if (result && result.success) {
-                document.getElementById('imageUrl').value = result.fileUrl;
-                showMsg('Image uploaded: ' + result.fileName, 'success');
-              } else {
-                showMsg('Upload failed: ' + (result ? result.error : 'Unknown error'), 'error');
-              }
-            })
-            .withFailureHandler(function(err) {
-              setLoading(false);
-              showMsg('Upload error: ' + err.message, 'error');
-            })
-            .uploadImageToDrive(base64, file.name, file.type);
-        };
-        reader.readAsDataURL(file);
-      }
+    } else {
+      setLoading(true);
+      google.script.run
+        .withSuccessHandler(function(id) {
+          setLoading(false);
+          showMsg('Saved!', 'success');
+          resetForm();
+        })
+        .withFailureHandler(function(err) { setLoading(false); showMsg('Error: ' + err.message, 'error'); })
+        .appendRow(SHEET_NAME, rowData);
+    }
+  }
 
-      function submitForm() {
-        var title       = document.getElementById('title').value.trim();
-        var description = document.getElementById('description').value.trim();
-        if (!title)       return showMsg('Title is required.', 'error');
-        if (!description) return showMsg('Description is required.', 'error');
+  // ── Reset ───────────────────────────────────────────────────
+  function resetForm() {
+    ['title', 'eventDate', 'eventTime', 'eventInfo', 'eventUrl', 'imageUrl'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('eventType').value      = '';
+    document.getElementById('status').value         = 'testing';
+    document.getElementById('isRecurring').checked  = false;
+    document.getElementById('recurringOptions').style.display = 'none';
+    document.getElementById('imgPreview').style.display       = 'none';
+    quill.setContents([]);
+  }
 
-        var rowData = {
-          title:       title,
-          eventType:   document.getElementById('eventType').value.trim(),
-          description: description,
-          date:        document.getElementById('eventDate').value,
-          time:        document.getElementById('eventTime').value,
-          info:        document.getElementById('eventInfo').value.trim(),
-          url:         document.getElementById('eventUrl').value.trim(),
-          graphic:     document.getElementById('imageUrl').value.trim(),
-          status:      document.querySelector('input[name="status"]:checked').value
-        };
+  function showMsg(text, type) {
+    var el = document.getElementById('msg');
+    el.textContent = text;
+    el.className   = 'msg ' + type;
+  }
 
-        setLoading(true);
-        google.script.run
-          .withSuccessHandler(function(id) {
-            setLoading(false);
-            showMsg('Saved! ID: ' + id, 'success');
-            resetForm();
-          })
-          .withFailureHandler(function(err) {
-            setLoading(false);
-            showMsg('Error: ' + err.message, 'error');
-          })
-          .appendRow(SHEET_NAME, rowData);
-      }
+  function setLoading(on) {
+    document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  }
+</script>
 
-      function resetForm() {
-        ['title', 'eventType', 'description', 'eventDate', 'eventTime',
-         'eventInfo', 'eventUrl', 'imageUrl'].forEach(function(id) {
-          var el = document.getElementById(id);
-          if (el) el.value = '';
-        });
-        document.getElementById('imagePreviewWrap').style.display = 'none';
-        document.querySelector('input[name="status"][value="testing"]').checked = true;
-        hideMsg();
-      }
-
-      function showMsg(text, type) {
-        var el = document.getElementById('msg');
-        el.textContent = text;
-        el.className   = 'msg ' + type;
-      }
-      function hideMsg() {
-        var el = document.getElementById('msg');
-        el.className   = 'msg';
-        el.textContent = '';
-      }
-      function setLoading(state) {
-        document.getElementById('spinner').style.display = state ? 'block' : 'none';
-      }
-    </script>
-
-  </body>
+</body>
 </html>
