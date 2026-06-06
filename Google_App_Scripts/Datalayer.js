@@ -21,7 +21,7 @@ function appendRow(sheetName, rowData) {
     rowData.info        || '',
     rowData.url         || '',
     rowData.graphic     || '',
-    rowData.status      || CONFIG.STATUS.TESTING,
+    String(rowData.status || CONFIG.STATUS.TESTING).toLowerCase(),
     now
   ];
 
@@ -40,7 +40,7 @@ function updateRowStatus(sheetName, rowId, newStatus) {
 
   for (var i = 1; i < data.length; i++) {
     if (data[i][CONFIG.COLS.ID] === rowId) {
-      sheet.getRange(i + 1, CONFIG.COLS.STATUS     + 1).setValue(newStatus);
+      sheet.getRange(i + 1, CONFIG.COLS.STATUS     + 1).setValue(String(newStatus).toLowerCase());
       sheet.getRange(i + 1, CONFIG.COLS.UPDATED_AT + 1).setValue(new Date().toISOString());
       return true;
     }

@@ -9,6 +9,108 @@ var SHEET_HEADERS = [
 ];
 
 // --------------------------------------------
+// MIGRATE: Rename old-format sheet tabs to the
+// new names and set all existing rows to 'deployed'
+// so they appear in the preview and GitHub push.
+//
+// Old → New mapping:
+//   Events  → JPAR Events
+//   Home, Blog, Team, Gallery → skipped (no match)
+//
+// Safe: only renames if the old tab exists AND
+// the new tab is empty (won't overwrite real data).
+// --------------------------------------------
+function migrateOldSheets() {
+  var ss  = SpreadsheetApp.getActiveSpreadsheet();
+  var ui  = SpreadsheetApp.getUi();
+  var log = [];
+
+  var MAP = {
+    'Events': 'JPAR Events'
+    // Add more mappings here if needed, e.g.:
+    // 'TX Events': 'JPAR TX Events'
+  };
+
+  Object.keys(MAP).forEach(function(oldName) {
+    var newName  = MAP[oldName];
+    var oldSheet = ss.getSheetByName(oldName);
+    var newSheet = ss.getSheetByName(newName);
+
+    if (!oldSheet) {
+      log.push('Skipped: "' + oldName + '" not found.');
+      return;
+    }
+
+    if (newSheet) {
+      var newRows = newSheet.getLastRow();
+      if (newRows > 1) {
+        log.push('Skipped: "' + newName + '" already has data (' + (newRows - 1) + ' rows).');
+        return;
+      }
+      // New tab exists but is empty — delete it before renaming
+      ss.deleteSheet(newSheet);
+    }
+
+    oldSheet.setName(newName);
+    log.push('Renamed: "' + oldName + '" → "' + newName + '"');
+  });
+
+  // Fix headers on all required tabs
+  Object.values(CONFIG.SHEETS).forEach(function(tabName) {
+    var sheet = ss.getSheetByName(tabName);
+    if (!sheet) return;
+
+    // Write correct headers (preserves data rows)
+    sheet.getRange(1, 1, 1, SHEET_HEADERS.length).setValues([SHEET_HEADERS]);
+    sheet.getRange(1, 1, 1, SHEET_HEADERS.length)
+      .setFontWeight('bold')
+      .setBackground('#00326D')
+      .setFontColor('#FFFFFF');
+    sheet.setFrozenRows(1);
+  });
+
+  // Backfill IDs, status (→ deployed), timestamps on all rows
+  var now     = new Date().toISOString();
+  var patched = 0;
+
+  ss.getSheets().forEach(function(sheet) {
+    var data = sheet.getDataRange().getValues();
+    if (data.length < 2) return;
+
+    for (var i = 1; i < data.length; i++) {
+      var row     = data[i];
+      var changed = false;
+
+      if (!row[0] && !row[1]) continue; // fully empty row
+
+      if (!row[CONFIG.COLS.ID]) {
+        sheet.getRange(i + 1, CONFIG.COLS.ID + 1).setValue(Utilities.getUuid());
+        changed = true;
+      }
+      // Normalise status to lowercase and default blanks to deployed
+      var existingStatus = String(row[CONFIG.COLS.STATUS] || '').toLowerCase().trim();
+      if (!existingStatus || existingStatus === CONFIG.STATUS.TESTING) {
+        sheet.getRange(i + 1, CONFIG.COLS.STATUS + 1).setValue(CONFIG.STATUS.DEPLOYED);
+        changed = true;
+      }
+      if (!row[CONFIG.COLS.UPDATED_AT]) {
+        sheet.getRange(i + 1, CONFIG.COLS.UPDATED_AT + 1).setValue(now);
+        changed = true;
+      }
+
+      if (changed) patched++;
+    }
+  });
+
+  log.push('');
+  log.push('Rows updated (IDs + deployed status): ' + patched);
+  log.push('');
+  log.push('Next: Deploy → Push Deployed to GitHub');
+
+  ui.alert('Migration Complete', log.join('\n'), ui.ButtonSet.OK);
+}
+
+// --------------------------------------------
 // SETUP: Ensure all 3 required tabs exist with
 // the correct headers. Safe to run on existing
 // sheets — only adds missing columns, never
@@ -190,8 +292,8 @@ function getSheetData(sheetName, statusFilter) {
     // Skip truly empty rows (no ID AND no Title)
     if (!row[CONFIG.COLS.ID] && !row[CONFIG.COLS.TITLE]) continue;
 
-    var status = row[CONFIG.COLS.STATUS];
-    if (statusFilter && statusFilter !== 'all' && status !== statusFilter) continue;
+    var status = String(row[CONFIG.COLS.STATUS] || '').toLowerCase().trim();
+    if (statusFilter && statusFilter !== 'all' && status !== statusFilter.toLowerCase()) continue;
 
     var obj = {};
     headers.forEach(function(h, idx) { obj[h] = row[idx]; });
@@ -199,6 +301,63 @@ function getSheetData(sheetName, statusFilter) {
   }
 
   return result;
+}
+
+// --------------------------------------------
+// DIAGNOSTIC: Shows exactly what the script
+// sees in the spreadsheet. Run this to debug
+// blank previews. Check the alert output.
+// --------------------------------------------
+function diagnoseCMS() {
+  var ss   = SpreadsheetApp.getActiveSpreadsheet();
+  var ui   = SpreadsheetApp.getUi();
+  var out  = [];
+
+  var sheets = ss.getSheets();
+  out.push('=== ALL SHEET TABS (' + sheets.length + ') ===');
+  sheets.forEach(function(s) {
+    var rows = Math.max(0, s.getLastRow() - 1);
+    out.push('  "' + s.getName() + '"  —  ' + rows + ' data row(s)');
+  });
+
+  out.push('');
+  out.push('=== REQUIRED TABS ===');
+  Object.values(CONFIG.SHEETS).forEach(function(tabName) {
+    var sheet = ss.getSheetByName(tabName);
+    if (!sheet) {
+      out.push('  MISSING: "' + tabName + '"');
+      return;
+    }
+
+    var data    = sheet.getDataRange().getValues();
+    var headers = data[0] || [];
+    out.push('  FOUND: "' + tabName + '"');
+    out.push('    Headers: ' + headers.join(' | '));
+    out.push('    Total rows (incl header): ' + data.length);
+
+    // Check first data row
+    if (data.length > 1) {
+      var r = data[1];
+      out.push('    Row 2 ID: "' + r[CONFIG.COLS.ID] + '"');
+      out.push('    Row 2 Title: "' + r[CONFIG.COLS.TITLE] + '"');
+      out.push('    Row 2 Status: "' + r[CONFIG.COLS.STATUS] + '"');
+    }
+
+    // What getAllRows returns
+    var allRows = getAllRows(tabName);
+    out.push('    getAllRows() result: ' + allRows.length + ' row(s)');
+  });
+
+  out.push('');
+  out.push('=== DEPLOYED PAYLOAD SUMMARY ===');
+  var payload = buildDeployedPayload();
+  Object.keys(payload.tabs).forEach(function(tab) {
+    out.push('  "' + tab + '": ' + payload.tabs[tab].length + ' deployed row(s)');
+  });
+
+  var msg = out.join('\n');
+  Logger.log(msg);
+  ui.alert('CMS Diagnostic', msg, ui.ButtonSet.OK);
 }
 
 // --------------------------------------------

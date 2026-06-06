@@ -26,6 +26,8 @@ function onOpen() {
   ui.createMenu('CMS Manager')
     .addSubMenu(addMenu)
     .addSeparator()
+    .addItem('Diagnose CMS',           'diagnoseCMS')
+    .addItem('Migrate Old Sheets',     'migrateOldSheets')
     .addItem('Setup Sheets',           'setupSheets')
     .addItem('Add New Tab',            'addNewTab')
     .addItem('Backfill Existing Rows', 'backfillExistingRows')
