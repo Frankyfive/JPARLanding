@@ -185,6 +185,7 @@
       width: 100%;
       height: 200px;
       object-fit: cover;
+      object-position: top center;
       display: block;
     }
     .event-calendar-event-image-placeholder {
@@ -318,10 +319,11 @@
     .footer a:hover { color: #fff; }
 
     /* ── Responsive ──────────────────────────── */
-    @media screen and (max-width: 992px) {
-      .event-calendar-grid { grid-template-columns: repeat(2, 1fr); }
+    @media screen and (max-width: 1100px) {
+      .event-calendar-grid { grid-template-columns: repeat(3, 1fr); }
     }
     @media screen and (max-width: 768px) {
+      .event-calendar-grid { grid-template-columns: repeat(2, 1fr); }
       .header { padding: 0 20px; }
       .hero { padding: 48px 20px; }
       .hero h1 { font-size: 32px; }
@@ -345,7 +347,7 @@
       .header__nav.open { display: flex; }
       .header__nav a { padding: 10px 14px; border-radius: 8px; }
     }
-    @media screen and (max-width: 575px) {
+    @media screen and (max-width: 480px) {
       .event-calendar-grid { grid-template-columns: 1fr; }
     }
   </style>
@@ -502,6 +504,24 @@
       renderCards(allRows);
     }
 
+    // ── Date / time formatters ────────────────
+    // Dates in cms.json are ISO strings from JSON.stringify(Date)
+    function fmtDate(val) {
+      if (!val) return '';
+      var d = new Date(val);
+      if (isNaN(d.getTime())) return String(val);
+      // Use UTC to avoid midnight-CST dates shifting a day in other timezones
+      return d.toLocaleDateString('en-US', {
+        year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+      });
+    }
+
+    function fmtTime(val) {
+      if (!val) return '';
+      if (typeof val === 'string') return val; // already "2:00 PM CT"
+      return String(val);
+    }
+
     // ── Render cards ──────────────────────────
     function renderCards(rows) {
       var grid = document.getElementById('grid');
@@ -512,15 +532,24 @@
         return;
       }
 
+      // Sort by date ascending (Digital Library has no meaningful date order)
+      if (currentTab !== 'Digital Library') {
+        rows = rows.slice().sort(function(a, b) {
+          var da = a.date ? new Date(a.date).getTime() : Infinity;
+          var db = b.date ? new Date(b.date).getTime() : Infinity;
+          return da - db;
+        });
+      }
+
       rows.forEach(function(row) {
-        var graphic   = row.graphic    || '';
-        var title     = row.title      || 'Untitled';
+        var graphic   = row.graphic     || '';
+        var title     = row.title       || 'Untitled';
         var desc      = row.description || '';
         var eventType = (row.eventType  || '').toUpperCase();
-        var date      = row.date       || '';
-        var time      = row.time       || '';
-        var info      = row.info       || '';
-        var url       = row.url        || '';
+        var dateStr   = fmtDate(row.date);
+        var timeStr   = fmtTime(row.time);
+        var info      = row.info        || '';
+        var url       = row.url         || '';
 
         var imgHtml = graphic
           ? '<div class="event-calendar-event-image"><img src="' + esc(graphic) + '" alt="' + esc(title) + '" loading="lazy"></div>'
@@ -530,12 +559,12 @@
           ? '<div class="event-calendar-event-type-container"><div class="event-calendar-event-type"><span>' + esc(eventType) + '</span></div></div>'
           : '';
 
-        var dateRow = date
-          ? '<div class="event-calendar-event-date"><div class="event-calendar-date-icon">' + ICON_CAL + '</div><div class="event-calendar-date-text">' + esc(date) + '</div></div>'
+        var dateRow = dateStr
+          ? '<div class="event-calendar-event-date"><div class="event-calendar-date-icon">' + ICON_CAL + '</div><div class="event-calendar-date-text">' + esc(dateStr) + '</div></div>'
           : '';
 
-        var timeRow = time
-          ? '<div class="event-calendar-event-time"><div class="event-calendar-time-icon">' + ICON_CLK + '</div><div class="event-calendar-time-text">' + esc(time) + '</div></div>'
+        var timeRow = timeStr
+          ? '<div class="event-calendar-event-time"><div class="event-calendar-time-icon">' + ICON_CLK + '</div><div class="event-calendar-time-text">' + esc(timeStr) + '</div></div>'
           : '';
 
         var infoRow = info
@@ -547,23 +576,26 @@
           : '';
 
         var card = document.createElement('div');
-        card.className          = 'event-calendar-event-card';
-        card.dataset.eventType  = eventType;
-        card.dataset.info       = info;
+        card.className         = 'event-calendar-event-card';
+        card.dataset.eventType = eventType;
+        card.dataset.info      = info;
 
         card.innerHTML =
           '<div class="event-calendar-event-card-inner">' +
             imgHtml +
             typeBadge +
             '<div class="event-calendar-card-text-content">' +
-              '<div class="event-calendar-event-title">'       + esc(title) + '</div>' +
-              '<div class="event-calendar-event-description">' + esc(desc)  + '</div>' +
+              '<div class="event-calendar-event-title">' + esc(title) + '</div>' +
+              '<div class="event-calendar-event-description"></div>' +
               '<div class="event-calendar-event-details">' +
                 dateRow + timeRow + infoRow +
               '</div>' +
               ctaHtml +
             '</div>' +
           '</div>';
+
+        // Set description as innerHTML to render Quill-formatted HTML
+        card.querySelector('.event-calendar-event-description').innerHTML = desc;
 
         grid.appendChild(card);
       });
