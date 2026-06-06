@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Nunito Sans', sans-serif;
+        background: #f7f9fc;
+        color: #00326D;
+        padding: 20px 16px;
+        font-size: 14px;
+      }
+      .cms-header {
+        display: flex; align-items: center; gap: 10px;
+        margin-bottom: 20px; padding-bottom: 12px;
+        border-bottom: 2px solid #00326D;
+      }
+      .badge {
+        background: #00326D; color: #fff;
+        font-size: 11px; font-weight: 800;
+        padding: 3px 8px; border-radius: 20px;
+        text-transform: uppercase; letter-spacing: 0.5px;
+      }
+      .cms-header h2 { font-size: 16px; font-weight: 800; }
+      .form-group { margin-bottom: 14px; }
+      label {
+        display: block; font-weight: 600;
+        margin-bottom: 5px; font-size: 13px; color: #00326D;
+      }
+      .required { color: #e53e3e; margin-left: 2px; }
+      input[type="text"], input[type="url"], input[type="date"],
+      input[type="time"], textarea, select {
+        width: 100%; padding: 9px 11px;
+        border: 1.5px solid #cbd5e0; border-radius: 6px;
+        font-family: 'Nunito Sans', sans-serif;
+        font-size: 13px; color: #00326D;
+        background: #fff; outline: none;
+        transition: border-color 0.2s;
+      }
+      input:focus, textarea:focus, select:focus { border-color: #00C6AB; }
+      textarea { resize: vertical; min-height: 80px; }
+      .hint { font-size: 11px; color: #a0aec0; margin-top: 4px; }
+      .image-preview-wrap { margin-top: 8px; display: none; }
+      .image-preview-wrap img {
+        width: 100%; max-height: 130px; object-fit: cover;
+        border-radius: 6px; border: 1.5px solid #cbd5e0;
+      }
+      .events-only { display: none; }
+      .mode-toggle { display: flex; gap: 8px; margin-bottom: 8px; }
+      .mode-btn {
+        flex: 1; padding: 6px; border-radius: 6px;
+        border: 1.5px solid #cbd5e0; background: #fff;
+        font-family: 'Nunito Sans', sans-serif;
+        font-size: 12px; font-weight: 600; color: #718096; cursor: pointer;
+      }
+      .mode-btn.active { border-color: #00326D; background: #00326D; color: #fff; }
+      .status-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+      .status-pills input[type="radio"] { display: none; }
+      .status-pills label {
+        cursor: pointer; padding: 5px 14px; border-radius: 20px;
+        border: 1.5px solid #cbd5e0; font-size: 12px; font-weight: 600;
+        color: #718096; background: #fff; transition: all 0.15s; margin: 0;
+      }
+      .status-pills input#status-deployed:checked + label { background: #00C6AB; border-color: #00C6AB; color: #fff; }
+      .status-pills input#status-testing:checked  + label { background: #f6ad55; border-color: #f6ad55; color: #fff; }
+      .status-pills input#status-archive:checked  + label { background: #a0aec0; border-color: #a0aec0; color: #fff; }
+      .btn-row { display: flex; gap: 8px; margin-top: 20px; }
+      .btn {
+        flex: 1; padding: 10px; border: none; border-radius: 6px;
+        font-family: 'Nunito Sans', sans-serif;
+        font-weight: 800; font-size: 13px; cursor: pointer;
+      }
+      .btn-primary { background: #00326D; color: #fff; }
+      .btn-reset   { background: #edf2f7; color: #00326D; }
+      .msg {
+        margin-top: 14px; padding: 10px 12px;
+        border-radius: 6px; font-size: 13px; font-weight: 600; display: none;
+      }
+      .msg.success { background: #c6f6d5; color: #276749; display: block; }
+      .msg.error   { background: #fed7d7; color: #9b2c2c; display: block; }
+      .spinner { display: none; text-align: center; padding: 10px 0; font-size: 12px; color: #a0aec0; }
+    </style>
+  </head>
+  <body>
+
+    <div class="cms-header">
+      <span class="badge"><?= sheetName ?></span>
+      <h2>Add New Entry</h2>
+    </div>
+
+    <div id="msg" class="msg"></div>
+
+    <!-- Shared fields -->
+    <div class="form-group">
+      <label for="title">Title <span class="required">*</span></label>
+      <input type="text" id="title" placeholder="Enter title...">
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description <span class="required">*</span></label>
+      <textarea id="description" placeholder="Enter description..."></textarea>
+    </div>
+
+    <!-- Events-only fields -->
+    <div class="form-group events-only">
+      <label for="eventType">Event Type</label>
+      <input type="text" id="eventType" placeholder="e.g. NETWORKING, TRAINING, CE">
+    </div>
+
+    <div class="form-group events-only">
+      <label for="eventDate">Date</label>
+      <input type="date" id="eventDate">
+    </div>
+
+    <div class="form-group events-only">
+      <label for="eventInfo">Info / Additional Details</label>
+      <textarea id="eventInfo" placeholder="Zoom link, CE credit info, prerequisites..."></textarea>
+    </div>
+
+    <div class="form-group events-only">
+      <label for="eventUrl">Registration URL</label>
+      <input type="url" id="eventUrl" placeholder="https://www.eventbrite.com/...">
+    </div>
+
+    <!-- Non-events fields -->
+    <div class="form-group non-events-only">
+      <label for="tags">Tags</label>
+      <input type="text" id="tags" placeholder="e.g. featured, news, tx">
+      <p class="hint">Separate tags with commas.</p>
+    </div>
+
+    <!-- Graphic / Image - shared -->
+    <div class="form-group">
+      <label>Graphic</label>
+      <div class="mode-toggle">
+        <button type="button" class="mode-btn active" id="btnUrl"    onclick="toggleMode('url')">Use URL</button>
+        <button type="button" class="mode-btn"        id="btnUpload" onclick="toggleMode('upload')">Upload File</button>
+      </div>
+      <div id="mode-url">
+        <input type="url" id="imageUrl" placeholder="https://..." oninput="previewImage(this.value)">
+      </div>
+      <div id="mode-upload" style="display:none;">
+        <input type="file" id="imageFile" accept="image/*" onchange="handleFileSelect(this)">
+        <p class="hint">Uploads to your configured Drive folder.</p>
+      </div>
+      <div class="image-preview-wrap" id="imagePreviewWrap">
+        <img id="imagePreview" src="" alt="Preview">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Status</label>
+      <div class="status-pills">
+        <input type="radio" name="status" id="status-testing"  value="testing" checked>
+        <label for="status-testing">Testing</label>
+        <input type="radio" name="status" id="status-deployed" value="deployed">
+        <label for="status-deployed">Deployed</label>
+        <input type="radio" name="status" id="status-archive"  value="archive">
+        <label for="status-archive">Archive</label>
+      </div>
+    </div>
+
+    <div class="spinner" id="spinner">Saving...</div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="submitForm()">Save Entry</button>
+      <button class="btn btn-reset"   onclick="resetForm()">Clear</button>
+    </div>
+
+    <script>
+      var SHEET_NAME = '<?= sheetName ?>';
+
+      // Show/hide tab-specific fields
+      if (SHEET_NAME === 'Events') {
+        document.querySelectorAll('.events-only').forEach(function(el) {
+          el.style.display = 'block';
+        });
+        document.querySelectorAll('.non-events-only').forEach(function(el) {
+          el.style.display = 'none';
+        });
+      }
+
+      function toggleMode(mode) {
+        document.getElementById('mode-url').style.display    = mode === 'url'    ? 'block' : 'none';
+        document.getElementById('mode-upload').style.display = mode === 'upload' ? 'block' : 'none';
+        document.getElementById('btnUrl').className    = 'mode-btn' + (mode === 'url'    ? ' active' : '');
+        document.getElementById('btnUpload').className = 'mode-btn' + (mode === 'upload' ? ' active' : '');
+      }
+
+      function previewImage(url) {
+        var wrap = document.getElementById('imagePreviewWrap');
+        var img  = document.getElementById('imagePreview');
+        if (url && url.startsWith('http')) {
+          img.src = url;
+          wrap.style.display = 'block';
+        } else {
+          wrap.style.display = 'none';
+        }
+      }
+
+      function handleFileSelect(input) {
+        var file = input.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var dataUrl  = e.target.result;
+          var base64   = dataUrl.split(',')[1];
+          // Show local preview immediately
+          document.getElementById('imagePreview').src             = dataUrl;
+          document.getElementById('imagePreviewWrap').style.display = 'block';
+          setLoading(true);
+          google.script.run
+            .withSuccessHandler(function(result) {
+              setLoading(false);
+              if (result && result.success) {
+                document.getElementById('imageUrl').value = result.fileUrl;
+                showMsg('Image uploaded: ' + result.fileName, 'success');
+              } else {
+                showMsg('Upload failed: ' + (result ? result.error : 'Unknown error'), 'error');
+              }
+            })
+            .withFailureHandler(function(err) {
+              setLoading(false);
+              showMsg('Upload error: ' + err.message, 'error');
+            })
+            .uploadImageToDrive(base64, file.name, file.type);
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function submitForm() {
+        var title       = document.getElementById('title').value.trim();
+        var description = document.getElementById('description').value.trim();
+        if (!title)       return showMsg('Title is required.', 'error');
+        if (!description) return showMsg('Description is required.', 'error');
+
+        var status  = document.querySelector('input[name="status"]:checked').value;
+        var graphic = document.getElementById('imageUrl').value.trim();
+
+        var rowData = {
+          title:       title,
+          description: description,
+          graphic:     graphic,
+          status:      status
+        };
+
+        if (SHEET_NAME === 'Events') {
+          rowData.eventType = document.getElementById('eventType').value.trim();
+          rowData.date      = document.getElementById('eventDate').value;
+          rowData.info      = document.getElementById('eventInfo').value.trim();
+          rowData.url       = document.getElementById('eventUrl').value.trim();
+        } else {
+          rowData.tags = document.getElementById('tags').value.trim();
+        }
+
+        setLoading(true);
+        google.script.run
+          .withSuccessHandler(function(id) {
+            setLoading(false);
+            showMsg('Saved! ID: ' + id, 'success');
+            resetForm();
+          })
+          .withFailureHandler(function(err) {
+            setLoading(false);
+            showMsg('Error: ' + err.message, 'error');
+          })
+          .appendRow(SHEET_NAME, rowData);
+      }
+
+      function resetForm() {
+        ['title','description','eventType','eventDate','eventInfo',
+         'eventUrl','tags','imageUrl'].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        document.getElementById('imagePreviewWrap').style.display = 'none';
+        document.querySelector('input[name="status"][value="testing"]').checked = true;
+        hideMsg();
+      }
+
+      function showMsg(text, type) {
+        var el = document.getElementById('msg');
+        el.textContent = text;
+        el.className   = 'msg ' + type;
+      }
+      function hideMsg() {
+        var el = document.getElementById('msg');
+        el.className   = 'msg';
+        el.textContent = '';
+      }
+      function setLoading(state) {
+        document.getElementById('spinner').style.display = state ? 'block' : 'none';
+      }
+    </script>
+
+  </body>
+</html>

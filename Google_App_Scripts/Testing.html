@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: sans-serif; padding: 20px; }
+      .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; }
+      img { max-width: 100%; height: auto; }
+    </style>
+  </head>
+  <body>
+    <h1>Staging Environment</h1>
+    <div id="content">Loading...</div>
+
+    <script>
+      // Call the Apps Script function to get data with "testing" or "deployed" status
+      google.script.run.withSuccessHandler(renderData).getSheetData('testing');
+
+      function renderData(data) {
+        var container = document.getElementById('content');
+        container.innerHTML = '';
+        data.forEach(function(item) {
+          container.innerHTML += `
+            <div class="card">
+              <h2>${item.Title}</h2>
+              <p>${item.Content}</p>
+              <img src="${item['Image URL']}" alt="Graphic">
+              <p><em>Status: ${item.Status}</em></p>
+            </div>
+          `;
+        });
+      }
+    </script>
+  </body>
+</html>
