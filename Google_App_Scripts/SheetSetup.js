@@ -63,6 +63,58 @@ function getSheet(sheetKey) {
 }
 
 // --------------------------------------------
+// BACKFILL: Add missing ID and UPDATED_AT to
+// existing rows that were entered manually.
+// Run from CMS Manager → Backfill Existing Rows.
+// --------------------------------------------
+function backfillExistingRows() {
+  var ss       = SpreadsheetApp.getActiveSpreadsheet();
+  var ui       = SpreadsheetApp.getUi();
+  var sheets   = ss.getSheets().filter(function(s) { return s.getName() !== 'Sheet1'; });
+  var now      = new Date().toISOString();
+  var patched  = 0;
+
+  sheets.forEach(function(sheet) {
+    var data = sheet.getDataRange().getValues();
+    if (data.length < 2) return;
+
+    for (var i = 1; i < data.length; i++) {
+      var row     = data[i];
+      var changed = false;
+
+      // Skip completely empty rows (no title at all)
+      if (!row[CONFIG.COLS.TITLE] && !row[CONFIG.COLS.ID]) continue;
+
+      // Fill missing ID
+      if (!row[CONFIG.COLS.ID]) {
+        sheet.getRange(i + 1, CONFIG.COLS.ID + 1).setValue(Utilities.getUuid());
+        changed = true;
+      }
+
+      // Fill missing Status
+      if (!row[CONFIG.COLS.STATUS]) {
+        sheet.getRange(i + 1, CONFIG.COLS.STATUS + 1).setValue(CONFIG.STATUS.TESTING);
+        changed = true;
+      }
+
+      // Fill missing UPDATED_AT
+      if (!row[CONFIG.COLS.UPDATED_AT]) {
+        sheet.getRange(i + 1, CONFIG.COLS.UPDATED_AT + 1).setValue(now);
+        changed = true;
+      }
+
+      if (changed) patched++;
+    }
+  });
+
+  ui.alert(
+    'Backfill Complete',
+    'Rows updated with missing ID / Status / UPDATED_AT: ' + patched,
+    ui.ButtonSet.OK
+  );
+}
+
+// --------------------------------------------
 // UTILITY: Read all rows from a tab as objects.
 // statusFilter: 'deployed' | 'testing' | 'all'
 // --------------------------------------------
@@ -79,7 +131,9 @@ function getSheetData(sheetName, statusFilter) {
 
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    if (!row[CONFIG.COLS.ID]) continue; // skip blank rows
+
+    // Skip truly empty rows (no ID AND no Title)
+    if (!row[CONFIG.COLS.ID] && !row[CONFIG.COLS.TITLE]) continue;
 
     var status = row[CONFIG.COLS.STATUS];
     if (statusFilter && statusFilter !== 'all' && status !== statusFilter) continue;

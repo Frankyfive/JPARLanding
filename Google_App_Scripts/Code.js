@@ -26,7 +26,8 @@ function onOpen() {
   ui.createMenu('CMS Manager')
     .addSubMenu(addMenu)
     .addSeparator()
-    .addItem('Add New Tab', 'addNewTab')
+    .addItem('Add New Tab',          'addNewTab')
+    .addItem('Backfill Existing Rows', 'backfillExistingRows')
     .addSeparator()
     .addSubMenu(
       ui.createMenu('Deploy')

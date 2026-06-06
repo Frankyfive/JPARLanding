@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JPAR Events</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="JPAR events, training, and resources for real estate agents.">
+  <link rel="shortcut icon" href="https://ownyourgrowth.jpar.com/hubfs/Hubspot%20Favicon.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;800&family=Inter:wght@400;700&display=swap">
+
+  <style>
+    /* ── Reset ──────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: 'Nunito Sans', sans-serif;
+      background: #fff;
+      color: #00326D;
+    }
+
+    a { color: #00C6AB; text-decoration: none; }
+    a:hover { text-decoration: underline; color: #009E83; }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 800;
+      color: #00326D;
+    }
+
+    /* ── Header ─────────────────────────────── */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .header__logo a { display: flex; align-items: center; }
+    .header__logo img { height: 48px; width: auto; display: block; }
+
+    /* Mobile hamburger */
+    .header__toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+    }
+    .header__toggle svg { width: 24px; height: 24px; fill: #00326D; }
+
+    .header__nav {
+      display: flex;
+      gap: 4px;
+    }
+    .header__nav a {
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #00326D;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .header__nav a:hover,
+    .header__nav a.active {
+      background: #00326D;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    /* ── Hero ────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #00326D 0%, #015297 100%);
+      padding: 64px 32px;
+      text-align: center;
+    }
+    .hero h1 {
+      color: #fff;
+      font-size: 48px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      color: rgba(255,255,255,0.88);
+      font-size: 18px;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* ── Filters ─────────────────────────────── */
+    #filters {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 16px 32px;
+      background: #f7f9fc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .filters-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    #filters select {
+      padding: 8px 12px;
+      height: 40px;
+      border: 1px solid #cbd5e0;
+      border-radius: 4px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 14px;
+      color: #00326D;
+      background: #fff;
+      cursor: pointer;
+    }
+    #filters select:focus { outline: 2px solid #00C6AB; outline-offset: 1px; }
+    #typeFilter     { flex-grow: 10; min-width: 160px; }
+    #locationFilter { flex-grow: 1;  min-width: 140px; }
+    .btn-apply {
+      white-space: nowrap;
+      padding: 8px 20px;
+      height: 40px;
+      background: #8fcbfe;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-apply:hover { background: #015297; }
+    .clear-link {
+      font-size: 13px;
+      color: #0c256b;
+      cursor: pointer;
+      text-align: right;
+      width: 100%;
+      padding: 6px 0 0;
+      text-decoration: none;
+      display: block;
+    }
+    .clear-link:hover { text-decoration: underline; }
+
+    /* ── Grid ────────────────────────────────── */
+    .event-calendar-mod { padding: 32px; }
+    .event-calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    /* ── Card ────────────────────────────────── */
+    .event-calendar-event-card { display: flex; flex-direction: column; }
+
+    .event-calendar-event-card-inner {
+      border: 1px solid #B4B4B4;
+      border-radius: 2px;
+      overflow: hidden;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      transition: box-shadow 0.2s;
+    }
+    .event-calendar-event-card-inner:hover {
+      box-shadow: 0 6px 24px rgba(0,50,109,0.13);
+    }
+
+    /* Image */
+    .event-calendar-event-image img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+    }
+    .event-calendar-event-image-placeholder {
+      width: 100%;
+      height: 200px;
+      background: #edf2f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #a0aec0;
+      font-size: 13px;
+    }
+
+    /* Type badge */
+    .event-calendar-event-type-container { padding: 10px 20px 0; }
+    .event-calendar-event-type {
+      display: inline-block;
+      background-color: rgba(1,82,151,1);
+      padding: 3px 10px;
+      border-radius: 2px;
+    }
+    .event-calendar-event-type span {
+      font-weight: bold;
+      font-style: normal;
+      color: #fff;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Card body */
+    .event-calendar-card-text-content {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .event-calendar-event-title {
+      font-family: Inter, sans-serif;
+      font-weight: 700;
+      color: #000;
+      font-size: 22px;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .event-calendar-event-description {
+      font-family: Inter, sans-serif;
+      font-weight: 400;
+      color: #747373;
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .event-calendar-event-details { margin-bottom: 50px; }
+
+    /* Detail rows */
+    .event-calendar-event-date,
+    .event-calendar-event-time,
+    .event-calendar-event-info {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .event-calendar-date-icon,
+    .event-calendar-time-icon,
+    .event-calendar-info-icon {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .event-calendar-date-icon svg,
+    .event-calendar-time-icon svg,
+    .event-calendar-info-icon svg {
+      fill: rgba(1,82,151,1);
+      height: 16px;
+      width: auto;
+    }
+    .event-calendar-date-text,
+    .event-calendar-time-text,
+    .event-calendar-info-text {
+      font-family: Inter, sans-serif;
+      font-size: 14px;
+      color: #000;
+      display: flex;
+      align-items: center;
+    }
+
+    /* CTA */
+    .event-calendar-event-cta { margin-top: auto; }
+    .event-calendar-standard-button a {
+      display: inline-block;
+      background-color: rgba(1,82,151,1);
+      color: #fff;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      padding: 10px 28px;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .event-calendar-standard-button a:hover {
+      background-color: rgba(143,203,254,1);
+      color: rgba(5,20,68,1);
+      text-decoration: none;
+    }
+
+    /* Empty / loading / error */
+    .state-msg {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: #a0aec0;
+      font-size: 15px;
+    }
+    .state-msg.error { color: #c53030; }
+
+    /* ── Footer ──────────────────────────────── */
+    .footer {
+      background: #00326D;
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      padding: 28px 32px;
+      font-size: 13px;
+      margin-top: 40px;
+    }
+    .footer a { color: rgba(255,255,255,0.85); }
+    .footer a:hover { color: #fff; }
+
+    /* ── Responsive ──────────────────────────── */
+    @media screen and (max-width: 992px) {
+      .event-calendar-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media screen and (max-width: 768px) {
+      .header { padding: 0 20px; }
+      .hero { padding: 48px 20px; }
+      .hero h1 { font-size: 32px; }
+      .hero p  { font-size: 16px; }
+      #filters, .event-calendar-mod { padding: 16px 20px; }
+
+      .header__toggle { display: block; }
+      .header__nav {
+        display: none;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: #fff;
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px 20px 16px;
+        border-bottom: 1px solid #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      }
+      .header__nav.open { display: flex; }
+      .header__nav a { padding: 10px 14px; border-radius: 8px; }
+    }
+    @media screen and (max-width: 575px) {
+      .event-calendar-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────── -->
+  <header class="header">
+    <div class="header__logo">
+      <a href="index.html">
+        <img src="https://ownyourgrowth.jpar.com/hs-fs/hubfs/JPAR-Star-REAL-ESTATE-blue-web.png?width=100&height=62&name=JPAR-Star-REAL-ESTATE-blue-web.png"
+             alt="JPAR Real Estate" width="100" height="62" loading="eager">
+      </a>
+    </div>
+
+    <button class="header__toggle" id="menuToggle" aria-label="Toggle menu">
+      <svg viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 132h416c8.8 0 16-7.2 16-16V76c0-8.8-7.2-16-16-16H16C7.2 60 0 67.2 0 76v40c0 8.8 7.2 16 16 16zm0 160h416c8.8 0 16-7.2 16-16v-40c0-8.8-7.2-16-16-16H16c-8.8 0-16 7.2-16 16v40c0 8.8 7.2 16 16 16zm0 160h416c8.8 0 16-7.2 16-16v-40c0-8.8-7.2-16-16-16H16c-8.8 0-16 7.2-16 16v40c0 8.8 7.2 16 16 16z"/>
+      </svg>
+    </button>
+
+    <nav class="header__nav" id="tabNav"></nav>
+  </header>
+
+  <!-- ── Hero ───────────────────────────────── -->
+  <section class="hero">
+    <h1 id="heroTitle">JPAR Events</h1>
+    <p  id="heroDesc">Stay ahead with JPAR's events, training, and education sessions—designed to help you grow, connect, and lead in real estate.</p>
+  </section>
+
+  <!-- ── Filters ────────────────────────────── -->
+  <div id="filters">
+    <div class="filters-row">
+      <select id="typeFilter"><option value="">Filter by Type</option></select>
+      <select id="locationFilter"><option value="">Filter by Location</option></select>
+      <button class="btn-apply" onclick="applyFilters()">Apply Filters</button>
+    </div>
+    <a class="clear-link" href="#" onclick="clearFilters(); return false;">Clear Filters</a>
+  </div>
+
+  <!-- ── Event grid ─────────────────────────── -->
+  <main class="event-calendar-mod">
+    <div class="event-calendar-grid" id="grid">
+      <div class="state-msg" id="statusMsg">Loading events&hellip;</div>
+    </div>
+  </main>
+
+  <!-- ── Footer ─────────────────────────────── -->
+  <footer class="footer">
+    &copy; <span id="yr"></span> JPAR Real Estate &mdash;
+    <a href="https://www.jparready.com/" target="_blank" rel="noopener">jparready.com</a>
+  </footer>
+
+  <script>
+    // ── Config ────────────────────────────────
+    var DATA_URL = './data/cms.json';
+
+    var ALL_TABS = ['JPAR Events', 'JPAR TX Events', 'Digital Library'];
+
+    var HERO = {
+      'JPAR Events': {
+        title: 'JPAR Events',
+        desc:  'Stay ahead with JPAR’s national events, training, and education sessions—designed to help you grow, connect, and lead in real estate.'
+      },
+      'JPAR TX Events': {
+        title: 'JPAR Texas Events',
+        desc:  'Continuous growth is essential for JPAR agents, and our Texas in-person events and weekly educational sessions provide invaluable opportunities for expansion.'
+      },
+      'Digital Library': {
+        title: 'Digital Library',
+        desc:  'Access JPAR’s library of resources, guides, and digital content to support your real estate career.'
+      }
+    };
+
+    // ── State ─────────────────────────────────
+    var cmsData    = {};  // full JSON from cms.json
+    var currentTab = ALL_TABS[0];
+    var allRows    = [];  // rows for the active tab
+
+    // ── Icons ─────────────────────────────────
+    var ICON_CAL  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" aria-hidden="true"><path d="M0 464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V192H0v272zm320-196c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM192 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM64 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zM400 64h-48V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H160V16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v48H48C21.5 64 0 85.5 0 112v48h448v-48c0-26.5-21.5-48-48-48z"/></svg>';
+    var ICON_CLK  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm61.8-104.4l-84.9-61.7c-3.1-2.3-4.9-5.9-4.9-9.7V116c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v141.7l66.8 48.6c5.4 3.9 6.5 11.4 2.6 16.8L334.6 349c-3.9 5.3-11.4 6.5-16.8 2.6z"/></svg>';
+    var ICON_INFO = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 512" aria-hidden="true"><path d="M20 424.229h20V279.771H20c-11.046 0-20-8.954-20-20V212c0-11.046 8.954-20 20-20h112c11.046 0 20 8.954 20 20v212.229h20c11.046 0 20 8.954 20 20V492c0 11.046-8.954 20-20 20H20c-11.046 0-20-8.954-20-20v-47.771c0-11.046 8.954-20 20-20zM96 0C56.235 0 24 32.235 24 72s32.235 72 72 72 72-32.235 72-72S135.764 0 96 0z"/></svg>';
+
+    // ── Boot ──────────────────────────────────
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    buildNav();
+    loadData();
+
+    // ── Mobile menu toggle ─────────────────────
+    document.getElementById('menuToggle').addEventListener('click', function() {
+      document.getElementById('tabNav').classList.toggle('open');
+    });
+
+    // ── Build nav ─────────────────────────────
+    function buildNav() {
+      var nav = document.getElementById('tabNav');
+      ALL_TABS.forEach(function(t) {
+        var a = document.createElement('a');
+        a.textContent = t;
+        a.dataset.tab = t;
+        a.href = '#';
+        if (t === currentTab) a.className = 'active';
+        a.addEventListener('click', function(e) {
+          e.preventDefault();
+          document.getElementById('tabNav').classList.remove('open');
+          switchTab(t);
+        });
+        nav.appendChild(a);
+      });
+    }
+
+    // ── Fetch cms.json ────────────────────────
+    function loadData() {
+      fetch(DATA_URL + '?v=' + Date.now())
+        .then(function(r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        })
+        .then(function(json) {
+          cmsData = json.tabs || {};
+          renderTab(currentTab);
+        })
+        .catch(function(err) {
+          document.getElementById('grid').innerHTML =
+            '<div class="state-msg error">Could not load events: ' + esc(err.message) + '</div>';
+        });
+    }
+
+    // ── Switch tab ────────────────────────────
+    function switchTab(tabName) {
+      currentTab = tabName;
+
+      // Update active nav link
+      document.querySelectorAll('.header__nav a').forEach(function(a) {
+        a.className = (a.dataset.tab === tabName) ? 'active' : '';
+      });
+
+      // Update hero
+      var info = HERO[tabName] || { title: tabName, desc: '' };
+      document.getElementById('heroTitle').textContent = info.title;
+      document.getElementById('heroDesc').textContent  = info.desc;
+
+      // Reset filters
+      document.getElementById('typeFilter').value     = '';
+      document.getElementById('locationFilter').value = '';
+
+      renderTab(tabName);
+    }
+
+    function renderTab(tabName) {
+      allRows = (cmsData[tabName] || []);
+      populateFilters(allRows);
+      renderCards(allRows);
+    }
+
+    // ── Render cards ──────────────────────────
+    function renderCards(rows) {
+      var grid = document.getElementById('grid');
+      grid.innerHTML = '';
+
+      if (!rows || rows.length === 0) {
+        grid.innerHTML = '<div class="state-msg">No events found for this section.</div>';
+        return;
+      }
+
+      rows.forEach(function(row) {
+        var graphic   = row.graphic    || '';
+        var title     = row.title      || 'Untitled';
+        var desc      = row.description || '';
+        var eventType = (row.eventType  || '').toUpperCase();
+        var date      = row.date       || '';
+        var time      = row.time       || '';
+        var info      = row.info       || '';
+        var url       = row.url        || '';
+
+        var imgHtml = graphic
+          ? '<div class="event-calendar-event-image"><img src="' + esc(graphic) + '" alt="' + esc(title) + '" loading="lazy"></div>'
+          : '<div class="event-calendar-event-image-placeholder">No image</div>';
+
+        var typeBadge = eventType
+          ? '<div class="event-calendar-event-type-container"><div class="event-calendar-event-type"><span>' + esc(eventType) + '</span></div></div>'
+          : '';
+
+        var dateRow = date
+          ? '<div class="event-calendar-event-date"><div class="event-calendar-date-icon">' + ICON_CAL + '</div><div class="event-calendar-date-text">' + esc(date) + '</div></div>'
+          : '';
+
+        var timeRow = time
+          ? '<div class="event-calendar-event-time"><div class="event-calendar-time-icon">' + ICON_CLK + '</div><div class="event-calendar-time-text">' + esc(time) + '</div></div>'
+          : '';
+
+        var infoRow = info
+          ? '<div class="event-calendar-event-info"><div class="event-calendar-info-icon">' + ICON_INFO + '</div><div class="event-calendar-info-text">' + esc(info) + '</div></div>'
+          : '';
+
+        var ctaHtml = url
+          ? '<div class="event-calendar-event-cta"><div class="event-calendar-standard-button"><a href="' + esc(url) + '" target="_blank" rel="noopener">REGISTER</a></div></div>'
+          : '';
+
+        var card = document.createElement('div');
+        card.className          = 'event-calendar-event-card';
+        card.dataset.eventType  = eventType;
+        card.dataset.info       = info;
+
+        card.innerHTML =
+          '<div class="event-calendar-event-card-inner">' +
+            imgHtml +
+            typeBadge +
+            '<div class="event-calendar-card-text-content">' +
+              '<div class="event-calendar-event-title">'       + esc(title) + '</div>' +
+              '<div class="event-calendar-event-description">' + esc(desc)  + '</div>' +
+              '<div class="event-calendar-event-details">' +
+                dateRow + timeRow + infoRow +
+              '</div>' +
+              ctaHtml +
+            '</div>' +
+          '</div>';
+
+        grid.appendChild(card);
+      });
+    }
+
+    // ── Filters ───────────────────────────────
+    function populateFilters(rows) {
+      var typeSet = new Set();
+      var citySet = new Set();
+      rows.forEach(function(row) {
+        var t = (row.eventType || '').toUpperCase().trim();
+        if (t) typeSet.add(t);
+        var c = extractCity(row.info || '');
+        if (c) citySet.add(c);
+      });
+      populateSelect(document.getElementById('typeFilter'),     typeSet, 'Filter by Type');
+      populateSelect(document.getElementById('locationFilter'), citySet, 'Filter by Location');
+    }
+
+    function populateSelect(el, values, placeholder) {
+      el.innerHTML = '<option value="">' + placeholder + '</option>';
+      Array.from(values).sort().forEach(function(v) {
+        var label = el.id === 'typeFilter' ? titleCase(v) : v;
+        el.add(new Option(label, v));
+      });
+    }
+
+    function applyFilters() {
+      var type = document.getElementById('typeFilter').value;
+      var city = document.getElementById('locationFilter').value;
+      document.querySelectorAll('.event-calendar-event-card').forEach(function(card) {
+        var matchType = !type || card.dataset.eventType === type;
+        var matchCity = !city || extractCity(card.dataset.info || '') === city;
+        card.style.display = (matchType && matchCity) ? '' : 'none';
+      });
+    }
+
+    function clearFilters() {
+      document.getElementById('typeFilter').value     = '';
+      document.getElementById('locationFilter').value = '';
+      document.querySelectorAll('.event-calendar-event-card').forEach(function(c) {
+        c.style.display = '';
+      });
+    }
+
+    // ── Helpers ───────────────────────────────
+    function extractCity(loc) {
+      if (!loc) return null;
+      var m = loc.match(/([A-Za-z\s]+),\s*[A-Z]{2}\s*\d{5}/);
+      if (m) return m[1].trim();
+      if (/^zoom$/i.test(loc.trim())) return 'Zoom';
+      return null;
+    }
+
+    function titleCase(str) {
+      return str.replace(/\w\S*/g, function(w) {
+        return w.charAt(0).toUpperCase() + w.substr(1).toLowerCase();
+      });
+    }
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+
+</body>
+</html>
