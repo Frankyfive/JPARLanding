@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-06T17:16:43.887Z",
+  "generatedAt": "2026-06-06T17:45:27.723Z",
   "tabs": {
     "JPAR Events": [
       {
@@ -100,6 +100,18 @@
       }
     ],
     "JPAR TX Events": [
+      {
+        "id": "60368d9e-abbf-4835-901b-bcdca0d40df6",
+        "title": "Broker Q&A (aka Ask the Broker)",
+        "eventType": "Q & A Session",
+        "description": "Get your questions answered! No holds barred!",
+        "date": "2026-06-08T05:00:00.000Z",
+        "time": "9:00am CST",
+        "info": "Every Monday\n\nJoin in on the webinar and get your questions answered. But please turn on your camera and learn how to mute yourself unless you are talking. We want to see you and have some great conversations!",
+        "url": "https://jpar.zoom.us/meeting/register/tZwvf-GvrDwsGtM9YBS1iZuCRZZf9mh29F6e#/registration",
+        "graphic": "https://ownyourgrowth.jpar.com/hs-fs/hubfs/Broker%20Q%26A%20-%20Event%20Page%20Graphic.jpg",
+        "updatedAt": "2026-06-06T16:15:43.943Z"
+      },
       {
         "id": "57c6152d-bebb-4674-b25c-23b1e7e9d993",
         "title": "Open Title Career Accelerator for Real Estate Agents",
@@ -1458,6 +1470,7 @@
         "graphic": "https://22503625.fs1.hubspotusercontent-na1.net/hubfs/22503625/marketplace-modules/parallax-section-module/codkdops-parallax-service-bg-1.jpg",
         "updatedAt": "2026-06-06T16:26:25.541Z"
       }
-    ]
+    ],
+    "Announcements": []
   }
 }
