@@ -175,11 +175,13 @@
       }
 
       /* Card image */
+      .event-calendar-event-image {
+        background: #f0f4f8;
+      }
       .event-calendar-event-image img {
         width: 100%;
         height: 200px;
-        object-fit: cover;
-        object-position: top center;
+        object-fit: contain;
         display: block;
       }
       .event-calendar-event-image-placeholder {
@@ -370,8 +372,6 @@
       // ── State ────────────────────────────────────────
       var CURRENT_TAB = '<?= tab ?>';
 
-      var ALL_TABS = ['JPAR Events', 'JPAR TX Events', 'Digital Library'];
-
       var HERO_CONTENT = {
         'JPAR Events': {
           title: 'JPAR Events',
@@ -394,14 +394,24 @@
       var ICON_CLOCK    = '<svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm61.8-104.4l-84.9-61.7c-3.1-2.3-4.9-5.9-4.9-9.7V116c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v141.7l66.8 48.6c5.4 3.9 6.5 11.4 2.6 16.8L334.6 349c-3.9 5.3-11.4 6.5-16.8 2.6z"/></svg>';
       var ICON_INFO     = '<svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 512" aria-hidden="true"><path d="M20 424.229h20V279.771H20c-11.046 0-20-8.954-20-20V212c0-11.046 8.954-20 20-20h112c11.046 0 20 8.954 20 20v212.229h20c11.046 0 20 8.954 20 20V492c0 11.046-8.954 20-20 20H20c-11.046 0-20-8.954-20-20v-47.771c0-11.046 8.954-20 20-20zM96 0C56.235 0 24 32.235 24 72s32.235 72 72 72 72-32.235 72-72S135.764 0 96 0z"/></svg>';
 
-      // ── Build header nav (no href — SPA, tab switch via JS) ──────
-      (function buildNav() {
+      // ── Build header nav from server-side sheet names ─────────────
+      google.script.run
+        .withSuccessHandler(function(tabs) {
+          var fallback = ['JPAR Events', 'JPAR TX Events', 'Digital Library'];
+          buildNavFromList(tabs && tabs.length ? tabs : fallback);
+        })
+        .withFailureHandler(function() {
+          buildNavFromList(['JPAR Events', 'JPAR TX Events', 'Digital Library']);
+        })
+        .getContentSheetNames();
+
+      function buildNavFromList(tabs) {
         var nav = document.getElementById('tabNav');
-        ALL_TABS.forEach(function(t) {
+        tabs.forEach(function(t) {
           var a = document.createElement('a');
-          a.textContent   = t;
-          a.dataset.tab   = t;
-          a.href          = '#';
+          a.textContent = t;
+          a.dataset.tab = t;
+          a.href        = '#';
           if (t === CURRENT_TAB) a.className = 'active';
           a.addEventListener('click', function(e) {
             e.preventDefault();
@@ -409,7 +419,7 @@
           });
           nav.appendChild(a);
         });
-      })();
+      }
 
       // ── Hero ──────────────────────────────────────────────────────
       function setHero(tabName) {

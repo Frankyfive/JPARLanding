@@ -507,11 +507,15 @@
       var el = document.getElementById(id);
       if (el) el.value = '';
     });
+    // Clear file input so a previously selected file doesn't persist
+    var fileInput = document.getElementById('imageFile');
+    if (fileInput) fileInput.value = '';
     document.getElementById('eventType').value      = '';
     document.getElementById('status').value         = 'testing';
     document.getElementById('isRecurring').checked  = false;
     document.getElementById('recurringOptions').style.display = 'none';
     document.getElementById('imgPreview').style.display       = 'none';
+    toggleMode('url');
     quill.setContents([]);
   }
 

@@ -113,6 +113,18 @@ function deleteRowById(sheetName, rowId) {
 }
 
 // --------------------------------------------
+// TABS: Return all content sheet names so the
+// Preview UI can build nav dynamically without
+// hardcoding tab names.
+// --------------------------------------------
+function getContentSheetNames() {
+  return SpreadsheetApp.getActiveSpreadsheet()
+    .getSheets()
+    .map(function(s) { return s.getName(); })
+    .filter(function(n) { return NON_CONTENT_SHEETS.indexOf(n) === -1; });
+}
+
+// --------------------------------------------
 // READ: Convenience wrappers around getSheetData()
 // --------------------------------------------
 function getDeployedRows(sheetName) {
