@@ -181,11 +181,13 @@
     }
 
     /* Image */
+    .event-calendar-event-image {
+      background: #f0f4f8;
+    }
     .event-calendar-event-image img {
       width: 100%;
       height: 200px;
-      object-fit: cover;
-      object-position: top center;
+      object-fit: contain;
       display: block;
     }
     .event-calendar-event-image-placeholder {
@@ -518,7 +520,24 @@
 
     function fmtTime(val) {
       if (!val) return '';
-      if (typeof val === 'string') return val; // already "2:00 PM CT"
+      // Google Sheets stores time cells as a fraction of the day with base date 1899-12-30.
+      // JSON.stringify converts this Date to "1899-12-30T19:48:00.000Z".
+      // We detect this and extract only the time portion using UTC.
+      if (typeof val === 'string') {
+        if (/^1899-12-30/.test(val)) {
+          var d = new Date(val);
+          if (!isNaN(d.getTime())) {
+            return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }) + ' CT';
+          }
+        }
+        return val; // plain text like "2:00 PM CT"
+      }
+      if (typeof val === 'number') {
+        var d = new Date(val);
+        if (!isNaN(d.getTime()) && d.getUTCFullYear() <= 1900) {
+          return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }) + ' CT';
+        }
+      }
       return String(val);
     }
 
@@ -552,7 +571,7 @@
         var url       = row.url         || '';
 
         var imgHtml = graphic
-          ? '<div class="event-calendar-event-image"><img src="' + esc(graphic) + '" alt="' + esc(title) + '" loading="lazy"></div>'
+          ? '<div class="event-calendar-event-image"><img src="' + esc(graphic) + '" alt="' + esc(title) + '" loading="lazy" onerror="this.parentNode.className=\'event-calendar-event-image-placeholder\';this.remove()"></div>'
           : '<div class="event-calendar-event-image-placeholder">No image</div>';
 
         var typeBadge = eventType

@@ -393,7 +393,16 @@
           setLoading(false);
           if (result && result.success) {
             document.getElementById('imageUrl').value = result.fileUrl;
-            showMsg('Uploaded: ' + result.fileName, 'success');
+            // Switch to URL mode so the populated URL is visible
+            toggleMode('url');
+            document.getElementById('imgPreviewImg').src        = result.fileUrl;
+            document.getElementById('imgPreview').style.display = 'block';
+            showMsg(
+              result.warning
+                ? '⚠ Sharing restricted by admin. URL copied — image may not load publicly.'
+                : 'Uploaded: ' + result.fileName + ' ✓',
+              result.warning ? 'error' : 'success'
+            );
           } else {
             showMsg('Upload failed: ' + (result ? result.error : 'Unknown error'), 'error');
           }

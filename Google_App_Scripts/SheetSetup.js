@@ -379,7 +379,11 @@ function getSheetData(sheetName, statusFilter) {
     if (statusFilter && statusFilter !== 'all' && status !== statusFilter.toLowerCase()) continue;
 
     var obj = {};
-    headers.forEach(function(h, idx) { obj[h] = row[idx]; });
+    headers.forEach(function(h, idx) {
+      var v = row[idx];
+      // google.script.run cannot serialize Date objects; convert to ISO string
+      obj[h] = (v instanceof Date) ? v.toISOString() : v;
+    });
     result.push(obj);
   }
 

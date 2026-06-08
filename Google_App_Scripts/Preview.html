@@ -484,10 +484,20 @@
 
       function formatTime(val) {
         if (!val) return '';
-        if (typeof val === 'string') return val;  // already formatted, e.g. "2:00 PM CT"
+        // Google Sheets time cells arrive as millisecond numbers where the
+        // date portion is 1899-12-30 (the Sheets epoch). Detect and extract time.
+        if (typeof val === 'string') {
+          if (/^1899-12-30/.test(val)) {
+            var d = new Date(val);
+            if (!isNaN(d.getTime())) {
+              return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }) + ' CT';
+            }
+          }
+          return val; // plain text like "2:00 PM CT"
+        }
         if (typeof val === 'number') {
           var d = new Date(val);
-          if (!isNaN(d.getTime())) {
+          if (!isNaN(d.getTime()) && d.getUTCFullYear() <= 1900) {
             return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }) + ' CT';
           }
         }
@@ -525,7 +535,7 @@
           var status    = String(row['Status'] || '').toLowerCase();
 
           var imgHtml = graphic
-            ? '<div class="event-calendar-event-image"><img src="' + escHtml(graphic) + '" alt="' + escHtml(title) + '" loading="lazy"></div>'
+            ? '<div class="event-calendar-event-image"><img src="' + escHtml(graphic) + '" alt="' + escHtml(title) + '" loading="lazy" onerror="this.parentNode.className=\'event-calendar-event-image-placeholder\';this.remove()"></div>'
             : '<div class="event-calendar-event-image-placeholder">No image</div>';
 
           var typeBadge = eventType

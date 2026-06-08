@@ -50,12 +50,23 @@ function uploadImageToDrive(base64Data, fileName, mimeType) {
 
     var fileId  = file.getId();
     var fileUrl = 'https://drive.google.com/uc?export=view&id=' + fileId;
+    var warning = null;
+
+    // setSharing may be blocked by Google Workspace org policies.
+    // Wrap separately so the file URL is still returned even if sharing fails.
+    try {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (sharingErr) {
+      Logger.log('setSharing blocked (org restriction?): ' + sharingErr.message);
+      warning = 'File saved but public sharing is restricted by your Google Workspace admin. The image may not display on the public site.';
+    }
 
     return {
       success:  true,
       fileId:   fileId,
       fileUrl:  fileUrl,
-      fileName: file.getName()
+      fileName: file.getName(),
+      warning:  warning
     };
 
   } catch (err) {
